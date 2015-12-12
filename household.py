@@ -30,7 +30,7 @@ class Household(abce.Agent, abce.Household):
 
     def selling(self):
         """ receive demand from neighbors and consumer;
-            calculate market_clearing_price, adaped the price slowly
+            calculate market_clearing_price, adapted the price slowly
             and sell the good to the neighbors, the quantity might
             be rationed.
         """

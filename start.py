@@ -18,7 +18,7 @@ def main():
                              'capital_types': OrderedDict(enumerate(['cap', 'lab'])),
                              'wage_stickiness': 0,
                              'price_stickiness': 0,
-                             'dividends_percent': 0,
+                             'dividends_percent': 0.1,
                              'network_weight_stickiness': 0}
 
     simulation = Simulation(simulation_parameters)
@@ -37,7 +37,7 @@ def main():
     simulation.declare_service('endowment_FFcap', 1, 'cap')
     simulation.declare_service('endowment_FFlab', 1, 'lab')
 
-    simulation.panel('firm', variables=['price', 'nominal_demand'])
+    simulation.panel('firm', variables=['price', 'nominal_demand', 'produced'])
 
     simulation.aggregate('firm',
                          possessions=['money'],
