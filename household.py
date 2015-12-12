@@ -1,10 +1,10 @@
 from __future__ import division
 import abce
-from abce.tools import is_zero, is_positive, is_negative, NotEnoughGoods, epsilon
+from abce.tools import NotEnoughGoods, epsilon
 from pprint import pprint
 
 class Household(abce.Agent, abce.Household):
-    def init(self, simulation_parameters, agent_parameters):
+    def init(self, simulation_parameters, _):
         self.num_firms = num_firms = simulation_parameters['num_firms']
         self.wage_stickiness = simulation_parameters['wage_stickiness']
 

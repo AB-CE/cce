@@ -1,12 +1,12 @@
 #pylint: disable=W0201
 from __future__ import division
 import abce
-from abce.tools import is_zero, is_positive, is_negative, NotEnoughGoods, epsilon
+from abce.tools import NotEnoughGoods, epsilon
 import random
 import numpy as np
 from optimization_functions import optimization
 from copy import copy
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict
 from pprint import pprint
 
 
@@ -16,7 +16,7 @@ def normalized_random(length):
     return np.array([v / sum_values for v in random_values])
 
 class Firm(abce.Agent, abce.Firm):
-    def init(self, simulation_parameters, agent_parameters):
+    def init(self, simulation_parameters, _):
         self.num_firms = simulation_parameters['num_firms']
         self.price_stickiness = simulation_parameters['price_stickiness']
         self.dividends_percent = simulation_parameters['dividends_percent']
@@ -31,7 +31,6 @@ class Firm(abce.Agent, abce.Firm):
 
         prices = normalized_random(len(self.neighbors))
         self.neighbor_prices = prices
-        self.wage = prices
 
         self.seed_weights = normalized_random(len(self.neighbors))
         self.weights = normalized_random(len(self.neighbors))
@@ -43,7 +42,6 @@ class Firm(abce.Agent, abce.Firm):
         self.price = random.uniform(0, 1)
         self.buying_price = OrderedDict(self.capital_types)
         self.profit = 0
-        self.profit_1 = 0
 
         if self.mygood == 'brd':
             self.b = 1.890
@@ -136,14 +134,3 @@ class Firm(abce.Agent, abce.Firm):
         else:
             self.dead = 1
         self.inventory = self.possession(self.mygood)
-
-    def policy_intervention(self):
-        """ policy intervention """
-        if self.round == 200:
-            if self.idn < int(self.num_firms) * 0.05:
-                self.create('money', self.possession('money') * 0.05)
-
-
-def inverse_dict(d):
-    """ swaps keys and values in a dictionary """
-    return OrderedDict([(v, k) for k, v in d.iteritems()])
