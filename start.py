@@ -6,6 +6,8 @@ from random import shuffle, randrange
 import sys
 from collections import OrderedDict
 from graphs import graph
+import abceweb
+import os
 
 
 def main():
@@ -53,7 +55,8 @@ def main():
         s.build_agents(Household, simulation_parameters['num_household'])
 
         s.run()
-        graph(simulation_parameters['name'])
+        os.chdir('../..')
+        abceweb.run(open=False)
 
 
 if __name__ == '__main__':
