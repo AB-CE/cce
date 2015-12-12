@@ -17,8 +17,8 @@ class Household(abce.Agent, abce.Household):
         self.alpha = {}
         self.alpha['brd'] = 0.3
         self.alpha['mlk'] = 0.7
-        self.create('endowment_FFcap', 25)
-        self.create('endowment_FFlab', 25)
+        self.create('endowment_FFcap', simulation_parameters['endowment_FFcap'])
+        self.create('endowment_FFlab', simulation_parameters['endowment_FFlab'])
 
         self.set_cobb_douglas_utility_function({final_good: 1 / num_firms
                                                 for _, final_good in self.final_goods.iteritems()})

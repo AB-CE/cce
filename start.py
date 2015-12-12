@@ -3,7 +3,6 @@ from firm import Firm
 from household import Household
 from abce import Simulation
 from collections import OrderedDict
-import abceweb
 import os
 
 
@@ -14,6 +13,8 @@ def main():
                              'trade_logging': 'off',
                              'num_household': 1,
                              'num_firms': 2,
+                             'endowment_FFcap': 25,
+                             'endowment_FFlab': 25,
                              'final_goods': OrderedDict(enumerate(['brd', 'mlk'])),
                              'capital_types': OrderedDict(enumerate(['cap', 'lab'])),
                              'wage_stickiness': 0,
@@ -51,9 +52,7 @@ def main():
     simulation.build_agents(Household, simulation_parameters['num_household'])
 
     simulation.run()
-    os.chdir('../..')
-    abceweb.run(open=False)
-
+    simulation.graphs()
 
 if __name__ == '__main__':
     main()
