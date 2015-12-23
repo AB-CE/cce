@@ -10,14 +10,14 @@ def main():
     utility_function, production_functions = read_sam('simplecce.sam.csv')
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 10,
+                             'num_rounds': 50,
                              'trade_logging': 'off',
                              'num_household': 1,
-                             'num_firms': 2,
+                             'num_firms': 1,
                              'endowment_FFcap': 25,
                              'endowment_FFlab': 25,
-                             'final_goods': OrderedDict(enumerate(['brd', 'mlk'])),
-                             'capital_types': OrderedDict(enumerate(['cap', 'lab'])),
+                             'final_goods': ['brd', 'mlk'],
+                             'capital_types': ['cap', 'lab'],
                              'wage_stickiness': 0,
                              'price_stickiness': 0,
                              'dividends_percent': 0.1,
@@ -25,33 +25,36 @@ def main():
                              'production_functions': production_functions,
                              'hh': utility_function}
 
+    firms = simulation_parameters['final_goods']
+    firms_and_household = firms + ['household']
     simulation = Simulation(simulation_parameters)
-    action_list = [(('firm', 'household'), 'send_demand'),
-                   (('firm', 'household'), 'selling'),
-                   (('firm', 'household'), 'buying'),
-                   ('firm', 'production'),
-                   ('firm', 'dividends'),
+    action_list = [(firms_and_household, 'send_demand'),
+                   (firms_and_household, 'selling'),
+                   (firms_and_household, 'buying'),
+                   (firms, 'production'),
+                   (firms, 'dividends'),
                    ('household', 'consuming'),
-                   ('firm', 'change_weights'),
-                   ('firm', 'stats'),
-                   (('household', 'firm'), 'aggregate'),
-                   (('firm'), 'panel')]
+                   (firms, 'change_weights'),
+                   (firms, 'stats'),
+                   (firms_and_household, 'aggregate')]
     simulation.add_action_list(action_list)
 
     simulation.declare_service('endowment_FFcap', 1, 'cap')
     simulation.declare_service('endowment_FFlab', 1, 'lab')
 
-    simulation.panel('firm', variables=['price', 'nominal_demand', 'produced'])
 
-    simulation.aggregate('firm',
-                         possessions=['money'],
-                         variables=['produced', 'profit', 'price', 'dead',
-                                    'inventory', 'rationing'])
     simulation.aggregate('household',
                          possessions=['money'],
                          variables=['utility', 'rationing'])
 
-    simulation.build_agents(Firm, simulation_parameters['num_firms'])
+    for good in simulation_parameters['final_goods']:
+        simulation.aggregate(good,
+                             possessions=['money'],
+                             variables=['price', 'nominal_demand', 'produced', 'profit', 'dead',
+                                        'inventory', 'rationing'])
+
+    for good in simulation_parameters['final_goods']:
+        simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
     simulation.build_agents(Household, simulation_parameters['num_household'])
 
     simulation.run()

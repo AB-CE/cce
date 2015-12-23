@@ -23,11 +23,10 @@ class Firm(abce.Agent, abce.Firm):
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
         self.final_goods = simulation_parameters['final_goods']
         self.capital_types = simulation_parameters['capital_types']
-        self.mygood = self.final_goods[self.idn]
-        production_function = simulation_parameters['production_functions'][self.mygood]
+        production_function = simulation_parameters['production_functions'][self.group]
 
-        self.neighbors = self.capital_types.keys()
-        self.neighbors_goods = self.capital_types.values()
+        self.neighbors = self.capital_types
+        self.neighbors_goods = self.capital_types
 
 
 
@@ -37,24 +36,23 @@ class Firm(abce.Agent, abce.Firm):
         self.seed_weights = normalized_random(len(self.neighbors))
         self.weights = normalized_random(len(self.neighbors))
 
-        self.create(self.mygood, 1)
+        self.create(self.group, 1)
         self.create('money', 1)
         self.money_1 = self.possession('money')
 
         self.price = random.uniform(0, 1)
-        self.buying_price = OrderedDict(self.capital_types)
         self.profit = 0
 
 
-        if self.mygood == 'brd':
+        if self.group == 'brd':
             self.b = production_function[0]
             self.beta = production_function[1]
-        elif self.mygood == 'mlk':
+        elif self.group == 'mlk':
             self.b = production_function[0]
             self.beta = production_function[1]
 
-        self.set_cobb_douglas(self.mygood, self.b, self.beta)
-        self.beta_list = [self.beta[capital_type] for capital_type in self.capital_types.values()]
+        self.set_cobb_douglas(self.group, self.b, self.beta)
+        self.beta_list = [self.beta[capital_type] for capital_type in self.capital_types]
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
@@ -73,17 +71,17 @@ class Firm(abce.Agent, abce.Firm):
         messages = self.get_messages('nominal_demand')
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
-        assert self.possession(self.mygood) > 0
-        market_clearing_price = sum(nominal_demand) / self.possession(self.mygood)
+        assert self.possession(self.group) > 0
+        market_clearing_price = sum(nominal_demand) / self.possession(self.group)
         self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
         demand = sum([msg.content / self.price for msg in messages])
-        if demand <= self.possession(self.mygood):
+        if demand <= self.possession(self.group):
             self.rationing = rationing = 1 - epsilon
         else:
-            self.rationing = rationing = self.possession(self.mygood) / demand - epsilon
+            self.rationing = rationing = self.possession(self.group) / demand - epsilon
 
         for msg in messages:
-            self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.mygood, quantity=msg.content / self.price * rationing, price=self.price)
+            self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=msg.content / self.price * rationing, price=self.price)
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
@@ -91,14 +89,14 @@ class Firm(abce.Agent, abce.Firm):
         for offers in self.get_offers_all().values():
             for offer in offers:
                 self.accept(offer)
-                self.buying_price[offer['good']] = offer['price']
+                self.neighbor_prices[self.neighbors_goods.index(offer['good'])] = offer['price']
 
     def production(self):
         """ produce using all goods and labor """
         input_goods = {input: self.possession(input) for input in self.beta.keys()}
         self.input_goods = copy(input_goods)
         p = self.produce(input_goods)
-        self.produced = p[self.mygood]
+        self.produced = p[self.group]
 
     def dividends(self):
         """ pay dividends to household if profit is positive, calculate profits """
@@ -108,19 +106,15 @@ class Firm(abce.Agent, abce.Firm):
         self.money_1 = self.possession('money')
 
     def _change_weights(self, neighbor_prices, seed_weights):
-        input_prices = np.array(neighbor_prices)
-        while True:
-            opt = optimization(seed_weights=seed_weights,
-                               input_prices=np.array(input_prices),
-                               b=self.b,
-                               beta=self.beta_list,
-                               method='SLSQP')
-            if not opt.success:
-                print self.round, self.name, opt.message
-                seed_weights = normalized_random(len(self.neighbors))
-            else:
-                break
-
+        opt = optimization(seed_weights=seed_weights,
+                           input_prices=np.array(neighbor_prices),
+                           b=self.b,
+                           beta=self.beta_list,
+                           method='SLSQP')
+        if not opt.success:
+            print self.round, self.name, opt.message
+            seed_weights = normalized_random(len(self.neighbors))
+            raise
         return opt.x
 
     def change_weights(self):
@@ -136,4 +130,4 @@ class Firm(abce.Agent, abce.Firm):
             self.dead = 0
         else:
             self.dead = 1
-        self.inventory = self.possession(self.mygood)
+        self.inventory = self.possession(self.group)
