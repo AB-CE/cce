@@ -23,11 +23,13 @@ class Firm(abce.Agent, abce.Firm):
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
         self.final_goods = simulation_parameters['final_goods']
         self.capital_types = simulation_parameters['capital_types']
+        production_function = simulation_parameters['production_functions'][self.mygood]
 
         self.neighbors = self.capital_types.keys()
         self.neighbors_goods = self.capital_types.values()
 
         self.mygood = self.final_goods[self.idn]
+
 
         prices = normalized_random(len(self.neighbors))
         self.neighbor_prices = prices
@@ -43,12 +45,13 @@ class Firm(abce.Agent, abce.Firm):
         self.buying_price = OrderedDict(self.capital_types)
         self.profit = 0
 
+
         if self.mygood == 'brd':
-            self.b = 1.890
-            beta = {'cap': 0.333, 'lab': 0.667}
+            self.b = production_function[0]
+            beta = production_function[1]
         elif self.mygood == 'mlk':
-            beta = {'cap': 0.571, 'lab': 0.429}
-            self.b = 1.980
+            self.b = production_function[0]
+            beta = production_function[1]
 
         self.set_cobb_douglas(self.mygood, self.b, beta)
         self.beta = [beta[capital_type] for capital_type in self.capital_types.values()]

@@ -20,7 +20,10 @@ def main():
                              'wage_stickiness': 0,
                              'price_stickiness': 0,
                              'dividends_percent': 0.1,
-                             'network_weight_stickiness': 0}
+                             'network_weight_stickiness': 0,
+                             'production_functions': {'brd': (1.890, {'cap': 0.333, 'lab': 0.667}),
+                                                      'mlk': (1.980, {'cap': 0.571, 'lab': 0.429})},
+                             'hh': {'brd': 0.3, 'mlk': 0.7}}
 
     simulation = Simulation(simulation_parameters)
     action_list = [(('firm', 'household'), 'send_demand'),
