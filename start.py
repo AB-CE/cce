@@ -4,9 +4,10 @@ from household import Household
 from abce import Simulation
 from collections import OrderedDict
 import os
-
+from sam_to_functions import read_sam
 
 def main():
+    utility_function, production_functions = read_sam('simplecce.sam.csv')
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
                              'num_rounds': 10,
@@ -21,9 +22,8 @@ def main():
                              'price_stickiness': 0,
                              'dividends_percent': 0.1,
                              'network_weight_stickiness': 0,
-                             'production_functions': {'brd': (1.890, {'cap': 0.333, 'lab': 0.667}),
-                                                      'mlk': (1.980, {'cap': 0.571, 'lab': 0.429})},
-                             'hh': {'brd': 0.3, 'mlk': 0.7}}
+                             'production_functions': production_functions,
+                             'hh': utility_function}
 
     simulation = Simulation(simulation_parameters)
     action_list = [(('firm', 'household'), 'send_demand'),

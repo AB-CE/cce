@@ -23,12 +23,12 @@ class Firm(abce.Agent, abce.Firm):
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
         self.final_goods = simulation_parameters['final_goods']
         self.capital_types = simulation_parameters['capital_types']
+        self.mygood = self.final_goods[self.idn]
         production_function = simulation_parameters['production_functions'][self.mygood]
 
         self.neighbors = self.capital_types.keys()
         self.neighbors_goods = self.capital_types.values()
 
-        self.mygood = self.final_goods[self.idn]
 
 
         prices = normalized_random(len(self.neighbors))
@@ -48,13 +48,13 @@ class Firm(abce.Agent, abce.Firm):
 
         if self.mygood == 'brd':
             self.b = production_function[0]
-            beta = production_function[1]
+            self.beta = production_function[1]
         elif self.mygood == 'mlk':
             self.b = production_function[0]
-            beta = production_function[1]
+            self.beta = production_function[1]
 
-        self.set_cobb_douglas(self.mygood, self.b, beta)
-        self.beta = [beta[capital_type] for capital_type in self.capital_types.values()]
+        self.set_cobb_douglas(self.mygood, self.b, self.beta)
+        self.beta_list = [self.beta[capital_type] for capital_type in self.capital_types.values()]
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
@@ -95,7 +95,7 @@ class Firm(abce.Agent, abce.Firm):
 
     def production(self):
         """ produce using all goods and labor """
-        input_goods = {'lab': self.possession('lab'), 'cap': self.possession('cap')}
+        input_goods = {input: self.possession(input) for input in self.beta.keys()}
         self.input_goods = copy(input_goods)
         p = self.produce(input_goods)
         self.produced = p[self.mygood]
@@ -113,7 +113,7 @@ class Firm(abce.Agent, abce.Firm):
             opt = optimization(seed_weights=seed_weights,
                                input_prices=np.array(input_prices),
                                b=self.b,
-                               beta=self.beta,
+                               beta=self.beta_list,
                                method='SLSQP')
             if not opt.success:
                 print self.round, self.name, opt.message
