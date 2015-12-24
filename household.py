@@ -18,13 +18,12 @@ class Household(abce.Agent, abce.Household):
         self.create('endowment_FFcap', simulation_parameters['endowment_FFcap'])
         self.create('endowment_FFlab', simulation_parameters['endowment_FFlab'])
 
-        self.set_cobb_douglas_utility_function({final_good: 1 / num_firms
-                                                for final_good in self.final_goods})
+        self.set_cobb_douglas_utility_function(self.alpha)
 
     def send_demand(self):
         for final_good in self.final_goods:
             demand = self.alpha[final_good] * self.possession("money")
-            self.message(final_good, 0, 'nominal_demand', demand)
+            self.message(final_good, 0, final_good, demand)
 
     def selling(self):
         """ receive demand from neighbors and consumer;

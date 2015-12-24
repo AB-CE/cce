@@ -21,20 +21,20 @@ class Firm(abce.Agent, abce.Firm):
         self.price_stickiness = simulation_parameters['price_stickiness']
         self.dividends_percent = simulation_parameters['dividends_percent']
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
-        self.final_goods = simulation_parameters['final_goods']
         self.capital_types = simulation_parameters['capital_types']
+        self.intermediary_goods = simulation_parameters['intermediary_goods']
         production_function = simulation_parameters['production_functions'][self.group]
-
-        self.neighbors = self.capital_types
-        self.neighbors_goods = self.capital_types
+        alphas = production_function[1]
 
 
+        self.neighbors_goods = [good for good, value in alphas.iteritems() if value > 0]
+        self.neighbors_address = ['household' if good in self.capital_types else good for good in self.neighbors_goods]
 
-        prices = normalized_random(len(self.neighbors))
+        prices = normalized_random(len(self.neighbors_address))
         self.neighbor_prices = prices
 
-        self.seed_weights = normalized_random(len(self.neighbors))
-        self.weights = normalized_random(len(self.neighbors))
+        self.seed_weights = normalized_random(len(self.neighbors_address))
+        self.weights = normalized_random(len(self.neighbors_address))
 
         self.create(self.group, 1)
         self.create('money', 1)
@@ -44,21 +44,17 @@ class Firm(abce.Agent, abce.Firm):
         self.profit = 0
 
 
-        if self.group == 'brd':
-            self.b = production_function[0]
-            self.beta = production_function[1]
-        elif self.group == 'mlk':
-            self.b = production_function[0]
-            self.beta = production_function[1]
+        self.b = production_function[0]
+        self.beta = {good: value for good, value in production_function[1].iteritems() if value > 0}
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
-        self.beta_list = [self.beta[capital_type] for capital_type in self.capital_types]
+        self.beta_list = [self.beta[good] for good in self.neighbors_goods]
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
-        for neighbor, weight in zip(self.neighbors_goods, self.weights):
-            self.message('household', 0,
-                         neighbor,
+        for neighbor, good, weight in zip(self.neighbors_address, self.neighbors_goods, self.weights):
+            self.message(neighbor, 0,
+                         good,
                          weight * self.possession("money"))
 
 
@@ -68,10 +64,10 @@ class Firm(abce.Agent, abce.Firm):
             and sell the good to the neighbors, the quantity might
             be rationed.
         """
-        messages = self.get_messages('nominal_demand')
+        messages = self.get_messages(self.group)
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
-        assert self.possession(self.group) > 0
+        assert self.possession(self.group) > 0, self.name
         market_clearing_price = sum(nominal_demand) / self.possession(self.group)
         self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
         demand = sum([msg.content / self.price for msg in messages])
@@ -113,7 +109,6 @@ class Firm(abce.Agent, abce.Firm):
                            method='SLSQP')
         if not opt.success:
             print self.round, self.name, opt.message
-            seed_weights = normalized_random(len(self.neighbors))
             raise
         return opt.x
 

@@ -5,27 +5,30 @@ from abce import Simulation
 from collections import OrderedDict
 import os
 from sam_to_functions import read_sam
+from pprint import pprint
+
 
 def main():
-    utility_function, production_functions = read_sam('simplecce.sam.csv')
+    utility_function, production_functions = read_sam('hierachical.sam.csv')
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 50,
+                             'num_rounds': 100,
                              'trade_logging': 'off',
                              'num_household': 1,
                              'num_firms': 1,
-                             'endowment_FFcap': 25,
-                             'endowment_FFlab': 25,
+                             'endowment_FFcap': 30,
+                             'endowment_FFlab': 30,
                              'final_goods': ['brd', 'mlk'],
+                             'intermediary_goods': ['tools'],
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0,
-                             'price_stickiness': 0,
-                             'dividends_percent': 0.1,
-                             'network_weight_stickiness': 0,
+                             'wage_stickiness': 0.0,
+                             'price_stickiness': 0.0,
+                             'network_weight_stickiness': 0.0,
+                             'dividends_percent': 0.0,
                              'production_functions': production_functions,
                              'hh': utility_function}
 
-    firms = simulation_parameters['final_goods']
+    firms = simulation_parameters['final_goods'] + simulation_parameters['intermediary_goods']
     firms_and_household = firms + ['household']
     simulation = Simulation(simulation_parameters)
     action_list = [(firms_and_household, 'send_demand'),
@@ -47,13 +50,13 @@ def main():
                          possessions=['money'],
                          variables=['utility', 'rationing'])
 
-    for good in simulation_parameters['final_goods']:
+    for good in firms:
         simulation.aggregate(good,
                              possessions=['money'],
                              variables=['price', 'nominal_demand', 'produced', 'profit', 'dead',
                                         'inventory', 'rationing'])
 
-    for good in simulation_parameters['final_goods']:
+    for good in firms:
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
     simulation.build_agents(Household, simulation_parameters['num_household'])
 

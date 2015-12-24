@@ -12,6 +12,7 @@ def float_or_zero(value):
         return 0.0
 
 def read_sam(name):
+    inputs = ['cap', 'lab', 'tools']
     # loads the table as dict of dict
     entries = defaultdict(dict)
     with open(name) as csvfile:
@@ -44,12 +45,12 @@ def read_sam(name):
     production_functions = {}
 
     # the production function
-    for firm in ['brd', 'mlk']:
-        for input in fields:
+    for firm in ['brd', 'mlk', 'tools']:
+        for input in inputs:
             betas[firm][input] = entries[input][firm] / column_sum[firm]
 
         Z = column_sum[firm]
-        b[firm] = Z / np.prod([entries[input][firm] ** betas[firm][input] for input in fields])
+        b[firm] = Z / np.prod([entries[input][firm] ** betas[firm][input] for input in inputs])
 
         production_functions[firm] = (b[firm], betas[firm])
 

@@ -3,7 +3,7 @@ import numpy as np
 
 
 def F(x, p, b, beta):
-    return - b * ((x[0] / p[0]) ** beta[0]) * ((x[1] / p[1]) ** beta[1])
+    return - b * np.prod((x / p) ** beta)
 
 def optimization(seed_weights,
                  input_prices,
