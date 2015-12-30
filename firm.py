@@ -8,12 +8,87 @@ from optimization_functions import optimization
 from copy import copy
 from collections import OrderedDict
 from pprint import pprint
+import itertools
 
 
 def normalized_random(length):
     random_values = [random.uniform(0.1, 0.9) for _ in range(length)]
     sum_values = sum(random_values)
     return np.array([v / sum_values for v in random_values])
+
+class GoodDetails:
+    def __init__(self, betas, capital_types, num_firms):
+        self.entities = OrderedDict()
+        self.idns = OrderedDict()
+        self.goods = OrderedDict()
+        self.prices = OrderedDict()
+        self.weights = OrderedDict()
+        self.betas = []
+        for good, value in betas.iteritems():
+            if value > 0:
+                self.betas.append(value)
+                if good in capital_types:
+                    self.entities[good] = ['household']
+                    self.idns[good] = [0]
+                    self.goods[good] = [good]
+                    self.prices[good] = [None]
+                    self.weights[good] = [None]
+                else:
+                    self.entities[good] = [good for idn in range(num_firms)]
+                    self.idns[good] = [idn for idn in range(num_firms)]
+                    self.goods[good] = [good for idn in range(num_firms)]
+                    self.prices[good] = [None for idn in range(num_firms)]
+                    self.weights[good] = [None for idn in range(num_firms)]
+
+    def list_of_cheapest_offers(self):
+        cheapest_offers = []
+        for good in self.goods:
+            cheapest_offers.append(min(self.prices[good]))
+        return np.array(cheapest_offers, dtype=float)
+
+    def update_weights_optimal_from_partial_list(self, weights):
+        for good in self.goods:
+            for i in xrange(len(self.weights[good])):
+                self.weights[good][i] = 0
+
+        for i, good in enumerate(self.goods):
+            index = np.argmax(self.prices[good])
+            self.weights[good][index] = weights[i]
+
+    def weights_as_list(self):
+        weights = [w for w in self.weights.values()]
+        return np.array(list(itertools.chain.from_iterable(weights)))
+
+    def set_weights_from_full_list(self, weights):
+        i = 0
+        for sublist in self.weights.values():
+            for s in range(len(sublist)):
+                sublist[s] = weights[i]
+                i += 1
+
+    def set_prices_from_list(self, prices):
+        i = 0
+        for sublist in self.prices.values():
+            for s in range(len(sublist)):
+                sublist[s] = prices[i]
+                i += 1
+
+    def set_price(self, good, nr, price):
+        self.prices[good][nr] = price
+
+    def __len__(self):
+        return sum([len(entry) for entry in self.entities.values()])
+
+    def num_goods(self):
+        return len(self.entities)
+
+    def __iter__(self):
+        for good in self.entities:
+            for x in zip(self.entities[good], self.idns[good], self.goods[good], self.prices[good], self.weights[good]):
+                yield x
+
+
+
 
 class Firm(abce.Agent, abce.Firm):
     def init(self, simulation_parameters, _):
@@ -24,17 +99,13 @@ class Firm(abce.Agent, abce.Firm):
         self.capital_types = simulation_parameters['capital_types']
         self.intermediary_goods = simulation_parameters['intermediary_goods']
         production_function = simulation_parameters['production_functions'][self.group]
-        alphas = production_function[1]
+        betas = production_function[1]
 
+        self.goods_details = GoodDetails(betas, self.capital_types, self.num_firms)
+        self.goods_details.set_prices_from_list(normalized_random(len(self.goods_details)))
 
-        self.neighbors_goods = [good for good, value in alphas.iteritems() if value > 0]
-        self.neighbors_address = ['household' if good in self.capital_types else good for good in self.neighbors_goods]
-
-        prices = normalized_random(len(self.neighbors_address))
-        self.neighbor_prices = prices
-
-        self.seed_weights = normalized_random(len(self.neighbors_address))
-        self.weights = normalized_random(len(self.neighbors_address))
+        self.seed_weights = normalized_random(self.goods_details.num_goods())
+        self.goods_details.set_weights_from_full_list(normalized_random(len(self.goods_details)))
 
         self.create(self.group, 1)
         self.create('money', 1)
@@ -43,20 +114,17 @@ class Firm(abce.Agent, abce.Firm):
         self.price = random.uniform(0, 1)
         self.profit = 0
 
-
         self.b = production_function[0]
         self.beta = {good: value for good, value in production_function[1].iteritems() if value > 0}
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
-        self.beta_list = [self.beta[good] for good in self.neighbors_goods]
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
-        for neighbor, good, weight in zip(self.neighbors_address, self.neighbors_goods, self.weights):
-            self.message(neighbor, 0,
+        for entity, idn, good, _, weight in self.goods_details:
+            self.message(entity, idn,
                          good,
-                         weight * self.possession("money"))
-
+                         weight * self.possession('money'))
 
     def selling(self):
         """ receive demand from neighbors and consumer;
@@ -74,10 +142,11 @@ class Firm(abce.Agent, abce.Firm):
         if demand <= self.possession(self.group):
             self.rationing = rationing = 1 - epsilon
         else:
-            self.rationing = rationing = self.possession(self.group) / demand - epsilon
-
+            self.rationing = rationing = max(0, self.possession(self.group) / demand - epsilon)
         for msg in messages:
-            self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=msg.content / self.price * rationing, price=self.price)
+            quantity = msg.content / self.price * rationing
+            assert not np.isnan(quantity), (msg.content, self.price, rationing)
+            self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=quantity, price=self.price)
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
@@ -85,7 +154,7 @@ class Firm(abce.Agent, abce.Firm):
         for offers in self.get_offers_all().values():
             for offer in offers:
                 self.accept(offer)
-                self.neighbor_prices[self.neighbors_goods.index(offer['good'])] = offer['price']
+                self.goods_details.set_price(offer['good'], offer['sender_idn'], offer['price'])
 
     def production(self):
         """ produce using all goods and labor """
@@ -101,23 +170,32 @@ class Firm(abce.Agent, abce.Firm):
         self.give('household', 0, good='money', quantity=self.dividends_percent * earnings)
         self.money_1 = self.possession('money')
 
-    def _change_weights(self, neighbor_prices, seed_weights):
-        opt = optimization(seed_weights=seed_weights,
-                           input_prices=np.array(neighbor_prices),
+    def change_weights(self):
+
+        opt = optimization(seed_weights=self.seed_weights,
+                           input_prices=self.goods_details.list_of_cheapest_offers(),
                            b=self.b,
-                           beta=self.beta_list,
+                           beta=self.goods_details.betas,
                            method='SLSQP')
         if not opt.success:
             print self.round, self.name, opt.message
             raise
-        return opt.x
 
-    def change_weights(self):
-        self.seed_weights = optimal_weights = self._change_weights(self.neighbor_prices, self.seed_weights)
-        self.weights = self.network_weight_stickiness * self.weights \
-                       + (1 - self.network_weight_stickiness) * optimal_weights
-        summe = np.nextafter(sum(self.weights), 2)
-        self.weights = np.nextafter(self.weights / summe, 0)
+        self.seed_weights = opt.x
+
+        old_weighs = self.goods_details.weights_as_list()
+        self.goods_details.update_weights_optimal_from_partial_list(opt.x)
+        optimal_weights = self.goods_details.weights_as_list()
+
+        weights = (self.network_weight_stickiness * old_weighs
+                   + (1 - self.network_weight_stickiness) * optimal_weights)
+
+        summe = np.nextafter(sum(weights), 2)  # TODO try remove next after
+        weights = np.nextafter(weights / summe, 0)
+
+        self.goods_details.set_weights_from_full_list(weights)
+
+
 
     def stats(self):
         """ helper for statistics """

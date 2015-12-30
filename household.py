@@ -21,9 +21,10 @@ class Household(abce.Agent, abce.Household):
         self.set_cobb_douglas_utility_function(self.alpha)
 
     def send_demand(self):
-        for final_good in self.final_goods:
-            demand = self.alpha[final_good] * self.possession("money")
-            self.message(final_good, 0, final_good, demand)
+        for i in range(self.num_firms):
+            for final_good in self.final_goods:
+                demand = self.alpha[final_good] / self.num_firms * self.possession("money")
+                self.message(final_good, i, final_good, demand)
 
     def selling(self):
         """ receive demand from neighbors and consumer;
