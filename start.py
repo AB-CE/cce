@@ -5,35 +5,34 @@ from government import Government
 from abce import Simulation
 from collections import OrderedDict
 import os
-from sam_to_functions import read_utility_function, read_production_functions, read_output_tax_shares
+from sam_to_functions import Sam
 from pprint import pprint
 
 
 def main():
+    sam = Sam('taxes.sam.csv',
+              inputs=['cap', 'lab'],
+              outputs=['brd', 'mlk'],
+              output_tax='tax',
+              consumption=['brd', 'mlk'])
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
                              'num_rounds': 100,
                              'trade_logging': 'off',
                              'num_household': 1,
                              'num_firms': 10,
-                             'endowment_FFcap': 25,
-                             'endowment_FFlab': 25,
-                             'final_goods': ['brd', 'mlk'],
+                             'endowment_FFcap': sam.endowment('cap'),
+                             'endowment_FFlab': sam.endowment('lab'),
+                             'final_goods': sam.consumption,
                              'intermediary_goods': [],
                              'capital_types': ['cap', 'lab'],
                              'wage_stickiness': 0.5,
                              'price_stickiness': 0.5,
                              'network_weight_stickiness': 0.5,
                              'dividends_percent': 0.1,
-                             'production_functions': read_production_functions('taxes.sam.csv',
-                                                     inputs=['cap', 'lab'],
-                                                     outputs=['brd', 'mlk'],
-                                                     output_tax='tax'),
-                             'hh': read_utility_function('taxes.sam.csv'),
-                             'output_tax_shares': read_output_tax_shares('taxes.sam.csv',
-                                                     inputs=['cap', 'lab'],
-                                                     outputs=['brd', 'mlk'],
-                                                     output_tax='tax')}
+                             'production_functions': sam.production_functions(),
+                             'hh': sam.utility_function(),
+                             'output_tax_shares': sam.output_tax_shares()}
 
     firms = simulation_parameters['final_goods'] + simulation_parameters['intermediary_goods']
     firms_and_household = firms + ['household']
