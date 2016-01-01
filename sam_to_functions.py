@@ -12,7 +12,6 @@ def float_or_zero(value):
         return 0.0
 
 def read_sam(name):
-    inputs = ['cap', 'lab', 'tools']
     # loads the table as dict of dict
     entries = defaultdict(dict)
     with open(name) as csvfile:
@@ -33,19 +32,25 @@ def read_sam(name):
     for col in fields:
         column_sum[col] = sum(item[col] for item in entries.values())
 
-    # the utility functions exponents as values in a dict
+    return (entries, fields, column_sum)
+
+def read_utility_function(name):
+    """ the utility functions exponents as values in a dict """
+    entries, fields, column_sum = read_sam(name)
     utility_function = {}
     for input in fields:
         utility_function[input] = entries[input]['hoh'] / column_sum['hoh']
 
-    print utility_function
+    return utility_function
 
+def read_production_functions(name, inputs, outputs):
+    entries, fields, column_sum = read_sam(name)
     betas = defaultdict(dict)
     b = {}
     production_functions = {}
 
     # the production function
-    for firm in ['brd', 'mlk', 'tools']:
+    for firm in outputs:
         for input in inputs:
             betas[firm][input] = entries[input][firm] / column_sum[firm]
 
@@ -54,6 +59,5 @@ def read_sam(name):
 
         production_functions[firm] = (b[firm], betas[firm])
 
-    pprint(dict(production_functions))
-    return (utility_function, production_functions)
+    return production_functions
 

@@ -4,12 +4,15 @@ from household import Household
 from abce import Simulation
 from collections import OrderedDict
 import os
-from sam_to_functions import read_sam
+from sam_to_functions import read_utility_function, read_production_functions
 from pprint import pprint
 
 
 def main():
-    utility_function, production_functions = read_sam('hierachical.sam.csv')
+    utility_function = read_utility_function('hierachical.sam.csv')
+    production_functions = read_production_functions('hierachical.sam.csv',
+                                                     inputs=['cap', 'lab', 'tools'],
+                                                     outputs=['brd', 'mlk', 'tools'])
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
                              'num_rounds': 100,
