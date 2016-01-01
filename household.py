@@ -9,7 +9,8 @@ class Household(abce.Agent, abce.Household):
         self.wage_stickiness = simulation_parameters['wage_stickiness']
 
 
-        self.create('money', 50)
+        self.create('money', simulation_parameters['endowment_FFcap']
+                             + simulation_parameters['endowment_FFlab'])
         self.utility = 0
 
         self.capital_types = simulation_parameters['capital_types']

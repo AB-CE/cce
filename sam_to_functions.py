@@ -32,7 +32,7 @@ def read_sam(name):
     for col in fields:
         column_sum[col] = sum(item[col] for item in entries.values())
 
-    return (entries, fields, column_sum)
+    return (dict(entries), fields, column_sum)
 
 def read_utility_function(name):
     """ the utility functions exponents as values in a dict """
@@ -43,21 +43,30 @@ def read_utility_function(name):
 
     return utility_function
 
-def read_production_functions(name, inputs, outputs):
+def read_production_functions(name, inputs, outputs, output_tax):
     entries, fields, column_sum = read_sam(name)
     betas = defaultdict(dict)
     b = {}
     production_functions = {}
 
-    # the production function
     for firm in outputs:
-        for input in inputs:
-            betas[firm][input] = entries[input][firm] / column_sum[firm]
+        Z = sum([entries[input][firm] for input in inputs])
 
-        Z = column_sum[firm]
-        b[firm] = Z / np.prod([entries[input][firm] ** betas[firm][input] for input in inputs])
+        for input in inputs:
+            betas[firm][input] = entries[input][firm] / Z
+
+        b[firm] = column_sum[firm] / np.prod([entries[input][firm] ** betas[firm][input] for input in inputs])
 
         production_functions[firm] = (b[firm], betas[firm])
 
     return production_functions
+
+def read_output_tax_shares(name, inputs, outputs, output_tax):
+    entries, fields, column_sum = read_sam(name)
+    output_tax_shares = {}
+    for firm in outputs:
+        output_tax_shares[firm] = entries[output_tax][firm] / sum([entries[input][firm] for input in inputs])
+    return output_tax_shares
+
+
 

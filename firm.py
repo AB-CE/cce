@@ -98,6 +98,7 @@ class Firm(abce.Agent, abce.Firm):
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
         self.capital_types = simulation_parameters['capital_types']
         self.intermediary_goods = simulation_parameters['intermediary_goods']
+        self.output_tax_share = simulation_parameters['output_tax_shares'][self.group]
         production_function = simulation_parameters['production_functions'][self.group]
         betas = production_function[1]
 
@@ -143,10 +144,20 @@ class Firm(abce.Agent, abce.Firm):
             self.rationing = rationing = 1 - epsilon
         else:
             self.rationing = rationing = max(0, self.possession(self.group) / demand - epsilon)
+        self.sales = []
         for msg in messages:
             quantity = msg.content / self.price * rationing
             assert not np.isnan(quantity), (msg.content, self.price, rationing)
-            self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=quantity, price=self.price)
+            sale = self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=quantity, price=self.price)
+            self.sales.append(sale)
+
+
+    def taxes(self):
+        total_sales = 0
+        for sale in self.sales:
+            total_sales += sale['final_quantity']
+
+        self.give('government', 0, good='money', quantity=min(self.possession('money'), total_sales * self.output_tax_share))
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
@@ -171,15 +182,14 @@ class Firm(abce.Agent, abce.Firm):
         self.money_1 = self.possession('money')
 
     def change_weights(self):
-
         opt = optimization(seed_weights=self.seed_weights,
                            input_prices=self.goods_details.list_of_cheapest_offers(),
                            b=self.b,
                            beta=self.goods_details.betas,
                            method='SLSQP')
         if not opt.success:
-            print self.round, self.name, opt.message
-            raise
+            print self.round, self.name, opt.message, self.goods_details.list_of_cheapest_offers()
+            raise Exception('Opitimization error')
 
         self.seed_weights = opt.x
 
