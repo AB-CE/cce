@@ -71,8 +71,11 @@ def main():
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
     simulation.build_agents(Household, simulation_parameters['num_household'])
     simulation.build_agents(Government, 1)
-
-    simulation.run()
+    try:
+        simulation.run()
+    except Exception as e:
+        print(e)
+        raise
 
     simulation.graphs()
 
