@@ -9,7 +9,7 @@ from copy import copy
 from collections import OrderedDict
 from pprint import pprint
 import itertools
-
+from sys import float_info
 
 def normalized_random(length):
     random_values = [random.uniform(0.1, 0.9) for _ in range(length)]
@@ -88,8 +88,6 @@ class GoodDetails:
                 yield x
 
 
-
-
 class Firm(abce.Agent, abce.Firm):
     def init(self, simulation_parameters, _):
         self.num_firms = simulation_parameters['num_firms']
@@ -97,7 +95,6 @@ class Firm(abce.Agent, abce.Firm):
         self.dividends_percent = simulation_parameters['dividends_percent']
         self.network_weight_stickiness = simulation_parameters['network_weight_stickiness']
         self.capital_types = simulation_parameters['capital_types']
-        self.intermediary_goods = simulation_parameters['intermediary_goods']
         self.output_tax_share = simulation_parameters['output_tax_shares'][self.group]
         production_function = simulation_parameters['production_functions'][self.group]
         betas = production_function[1]
@@ -140,10 +137,10 @@ class Firm(abce.Agent, abce.Firm):
         market_clearing_price = sum(nominal_demand) / self.possession(self.group)
         self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
         demand = sum([msg.content / self.price for msg in messages])
-        if demand <= self.possession(self.group):
-            self.rationing = rationing = 1 - epsilon
+        if demand < self.possession(self.group):
+            self.rationing = rationing = 1 - float_info.epsilon * self.num_firms
         else:
-            self.rationing = rationing = max(0, self.possession(self.group) / demand - epsilon)
+            self.rationing = rationing = max(0, self.possession(self.group) / demand - float_info.epsilon * self.num_firms)
         self.sales = []
         for msg in messages:
             quantity = msg.content / self.price * rationing

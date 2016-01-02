@@ -2,6 +2,8 @@ from __future__ import division
 import abce
 from abce.tools import NotEnoughGoods, epsilon
 from pprint import pprint
+from sys import float_info
+
 
 class Household(abce.Agent, abce.Household):
     def init(self, simulation_parameters, _):
@@ -42,10 +44,10 @@ class Household(abce.Agent, abce.Household):
             else:
                 self.price = price = market_clearing_price
             demand = sum([msg.content / price for msg in ct_messages])
-            if demand <= self.possession(capital_type):
-                self.rationing = rationing = 1 - epsilon
+            if demand < self.possession(capital_type):
+                self.rationing = rationing = 1 - float_info.epsilon * self.num_firms
             else:
-                self.rationing = rationing = self.possession(capital_type) / demand - epsilon
+                self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms
             for msg in ct_messages:
                 self.sell(receiver_group=msg.sender_group,
                           receiver_idn=msg.sender_idn,
