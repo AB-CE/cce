@@ -85,5 +85,9 @@ class Sam():
         assert name in self.inputs
         return self.column_sum[name]
 
+    def endowment_vector(self, column):
+        return {row_name: self.entries[row_name][column] for row_name in self.entries}
+
+
 
 

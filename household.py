@@ -3,13 +3,14 @@ import abce
 from abce.tools import NotEnoughGoods, epsilon
 from pprint import pprint
 from sys import float_info
-
+from collections import defaultdict
 
 class Household(abce.Agent, abce.Household):
     def init(self, simulation_parameters, _):
         self.num_firms = num_firms = simulation_parameters['num_firms']
         self.wage_stickiness = simulation_parameters['wage_stickiness']
-
+        self.import_goods = defaultdict(float)
+        self.import_goods.update({good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0})
 
         self.create('money', simulation_parameters['endowment_FFcap']
                              + simulation_parameters['endowment_FFlab'])
@@ -23,10 +24,16 @@ class Household(abce.Agent, abce.Household):
         self.set_cobb_douglas_utility_function(self.alpha)
 
     def send_demand(self):
-        for i in range(self.num_firms):
-            for final_good in self.final_goods:
-                demand = self.alpha[final_good] / self.num_firms * self.possession("money")
+        for good, demand in self.import_goods.iteritems():
+            if demand > 0:
+                self.message('netexport', 0, good, demand)
+
+        for final_good in self.final_goods:
+            for i in range(self.num_firms):
+                demand = (self.alpha[final_good] / self.num_firms * self.possession("money")
+                          - self.import_goods[final_good] / self.num_firms)
                 self.message(final_good, i, final_good, demand)
+
 
     def selling(self):
         """ receive demand from neighbors and consumer;
