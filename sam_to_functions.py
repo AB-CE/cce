@@ -28,7 +28,7 @@ class Sam():
                 if rowindex == 'sum':
                     break
                 for cellindex, cell in row.iteritems():
-                    if cellindex not in  ['index', 'sum']:
+                    if cellindex not in ['index', 'sum']:
                         entries[rowindex][cellindex] = float_or_zero(cell)
 
     # sums the columns
@@ -63,7 +63,7 @@ class Sam():
                        / np.prod([entries[input][firm] ** betas[firm][input]
                                   for input in self.inputs]))
 
-            production_functions[firm] = (b[firm], betas[firm])
+            production_functions[firm] = (b[firm], dict(betas[firm]))
 
         return production_functions
 
