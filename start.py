@@ -2,6 +2,7 @@ from __future__ import division
 from firm import Firm
 from household import Household
 from netexport import NetExport
+from investment import Investment
 from government import Government
 from abce import Simulation
 from collections import OrderedDict
@@ -11,12 +12,12 @@ from pprint import pprint
 
 
 def main():
-    sam = Sam('hirachical_taxes_nx.sam.csv',
+    sam = Sam('hirachical_taxes_nx_inv.sam.csv',
               inputs=['cap', 'lab', 'tools'],
               outputs=['brd', 'mlk', 'tools'],
               output_tax='tax',
               consumption=['brd', 'mlk'],
-              consumers=['hoh'])
+              consumers=['hoh', 'inv'])
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
@@ -36,14 +37,17 @@ def main():
                              'production_functions': sam.production_functions(),
                              'consumption_functions': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares(),
-                             'net_export': sam.endowment_vector('nx')}
+                             'net_export': sam.endowment_vector('nx'),
+                             'investment_share': sam.investment_share('hoh', 'inv'),
+                             'initial_investment': sam.initial_investment('inv')}
 
     firms = sam.outputs
     firms_and_household_netexport = firms + ['household', 'netexport']
     simulation = Simulation(simulation_parameters)
-    action_list = [(firms_and_household_netexport, 'send_demand'),
+    action_list = [(firms_and_household_netexport + ['investment'], 'send_demand'),
                    (firms_and_household_netexport, 'selling'),
-                   (firms_and_household_netexport, 'buying'),
+                   (firms_and_household_netexport + ['investment'], 'buying'),
+                   ('household', 'investing'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
                    (firms, 'production'),
@@ -51,7 +55,7 @@ def main():
                    (firms, 'change_weights'),
                    (firms + ['netexport'], 'stats'),
                    (firms_and_household_netexport, 'aggregate'),
-                   (('household', 'netexport'), 'consuming'),
+                   (('household', 'netexport', 'investment'), 'consuming'),
                    ('government', 'aggregate')]
     simulation.add_action_list(action_list)
 
@@ -60,7 +64,7 @@ def main():
 
     simulation.aggregate('household',
                          possessions=['money'],
-                         variables=[])
+                         variables=['investment', 'sales_earning'])
 
     simulation.aggregate('netexport',
                          possessions=['brd', 'mlk', 'money'],
@@ -79,6 +83,7 @@ def main():
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
     simulation.build_agents(Household, simulation_parameters['num_household'])
     simulation.build_agents(NetExport, 1)
+    simulation.build_agents(Investment, 1)
     simulation.build_agents(Government, 1)
     try:
         simulation.run()

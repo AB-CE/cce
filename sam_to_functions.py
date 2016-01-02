@@ -88,6 +88,11 @@ class Sam():
     def endowment_vector(self, column):
         return {row_name: self.entries[row_name][column] for row_name in self.entries}
 
+    def investment_share(self, von, zu):
+        return self.column_sum[zu] / sum(self.entries[von].values())
+
+    def initial_investment(self, zu):
+        return self.column_sum[zu]
 
 
 
