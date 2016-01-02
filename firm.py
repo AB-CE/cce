@@ -152,7 +152,9 @@ class Firm(abce.Agent, abce.Firm):
     def taxes(self):
         total_sales = sum([sale['final_quantity'] for sale in self.sales])
 
-        self.give('government', 0, good='money', quantity=min(self.possession('money'), total_sales * self.output_tax_share))
+        tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
+
+        self.give('government', 0, good='money', quantity=min(self.possession('money'), tax))
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
