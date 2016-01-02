@@ -42,22 +42,24 @@ class Sam():
         """ the utility functions exponents as values in a dict """
         entries, column_sum = self.entries, self.column_sum
         utility_function = {}
+        Z = sum([entries[input]['hoh'] for input in self.consumption])
         for input in self.consumption:
-            utility_function[input] = entries[input]['hoh'] / column_sum['hoh']
+            utility_function[input] = entries[input]['hoh'] / Z
 
         return utility_function
 
     def production_functions(self):
         entries, column_sum = self.entries, self.column_sum
+        output_tax_shares = self.output_tax_shares()
         betas = defaultdict(dict)
         b = {}
         production_functions = {}
 
         for firm in self.outputs:
-            Z = sum([entries[input][firm] for input in self.inputs])
+            Z = sum([(1 + output_tax_shares[firm]) * entries[input][firm] for input in self.inputs])
 
             for input in self.inputs:
-                betas[firm][input] = entries[input][firm] / Z
+                betas[firm][input] = (1 + output_tax_shares[firm]) * entries[input][firm] / Z
 
             b[firm] = (column_sum[firm]
                        / np.prod([entries[input][firm] ** betas[firm][input]
