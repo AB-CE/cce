@@ -14,7 +14,8 @@ def main():
               inputs=['cap', 'lab', 'tools'],
               outputs=['brd', 'mlk', 'tools'],
               output_tax='tax',
-              consumption=['brd', 'mlk'])
+              consumption=['brd', 'mlk'],
+              consumers=['hoh'])
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
@@ -31,7 +32,7 @@ def main():
                              'network_weight_stickiness': 0.0,
                              'dividends_percent': 0.1,
                              'production_functions': sam.production_functions(),
-                             'hh': sam.utility_function(),
+                             'consumption_functions': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares()}
 
     firms = sam.outputs

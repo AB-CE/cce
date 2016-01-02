@@ -12,9 +12,9 @@ def float_or_zero(value):
         return 0.0
 
 class Sam():
-    def __init__(self, name, inputs, outputs, output_tax, consumption):
+    def __init__(self, name, inputs, outputs, output_tax, consumption, consumers):
         self.inputs, self.outputs, self.output_tax = inputs, outputs, output_tax
-        self.consumption = consumption
+        self.consumption, self.consumers = consumption, consumers
 
         # loads the table as dict of dict
         entries = defaultdict(dict)
@@ -41,12 +41,15 @@ class Sam():
     def utility_function(self):
         """ the utility functions exponents as values in a dict """
         entries, column_sum = self.entries, self.column_sum
-        utility_function = {}
-        Z = sum([entries[input]['hoh'] for input in self.consumption])
-        for input in self.consumption:
-            utility_function[input] = entries[input]['hoh'] / Z
+        utility_functions = {}
+        for consumer in self.consumers:
+            alphas = {}
+            Z = sum([entries[input][consumer] for input in self.consumption])
+            for input in self.consumption:
+                alphas[input] = entries[input][consumer] / Z
+            utility_functions[consumer] = alphas
 
-        return utility_function
+        return utility_functions
 
     def production_functions(self):
         entries, column_sum = self.entries, self.column_sum
