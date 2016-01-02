@@ -10,31 +10,31 @@ from pprint import pprint
 
 
 def main():
-    sam = Sam('taxes.sam.csv',
-              inputs=['cap', 'lab'],
-              outputs=['brd', 'mlk'],
+    sam = Sam('hirachical_taxes.sam.csv',
+              inputs=['cap', 'lab', 'tools'],
+              outputs=['brd', 'mlk', 'tools'],
               output_tax='tax',
               consumption=['brd', 'mlk'])
+
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 100,
+                             'num_rounds': 60,
                              'trade_logging': 'off',
                              'num_household': 1,
-                             'num_firms': 10,
+                             'num_firms': 50,
                              'endowment_FFcap': sam.endowment('cap'),
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
-                             'intermediary_goods': [],
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.5,
-                             'price_stickiness': 0.5,
-                             'network_weight_stickiness': 0.5,
+                             'wage_stickiness': 0.2,
+                             'price_stickiness': 0.2,
+                             'network_weight_stickiness': 0.0,
                              'dividends_percent': 0.1,
                              'production_functions': sam.production_functions(),
                              'hh': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares()}
 
-    firms = simulation_parameters['final_goods'] + simulation_parameters['intermediary_goods']
+    firms = sam.outputs
     firms_and_household = firms + ['household']
     simulation = Simulation(simulation_parameters)
     action_list = [(firms_and_household, 'send_demand'),
@@ -56,7 +56,7 @@ def main():
 
     simulation.aggregate('household',
                          possessions=['money'],
-                         variables=['utility', 'rationing'])
+                         variables=[])
 
     simulation.aggregate('government',
                          variables=['money'])
