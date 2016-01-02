@@ -15,7 +15,6 @@ class Household(abce.Agent, abce.Household):
                              + simulation_parameters['endowment_FFlab'])
         self.utility = 0
 
-        self.capital_types = simulation_parameters['capital_types']
         self.final_goods = simulation_parameters['final_goods']
         self.alpha = simulation_parameters['hh']
         self.create('endowment_FFcap', simulation_parameters['endowment_FFcap'])

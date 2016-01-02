@@ -150,9 +150,7 @@ class Firm(abce.Agent, abce.Firm):
 
 
     def taxes(self):
-        total_sales = 0
-        for sale in self.sales:
-            total_sales += sale['final_quantity']
+        total_sales = sum([sale['final_quantity'] for sale in self.sales])
 
         self.give('government', 0, good='money', quantity=min(self.possession('money'), total_sales * self.output_tax_share))
 
@@ -186,7 +184,7 @@ class Firm(abce.Agent, abce.Firm):
                            method='SLSQP')
         if not opt.success:
             print self.round, self.name, opt.message, self.goods_details.list_of_cheapest_offers()
-            raise Exception('Opitimization error')
+            raise Exception('Optimization error')
 
         self.seed_weights = opt.x
 
@@ -197,8 +195,7 @@ class Firm(abce.Agent, abce.Firm):
         weights = (self.network_weight_stickiness * old_weighs
                    + (1 - self.network_weight_stickiness) * optimal_weights)
 
-        summe = np.nextafter(sum(weights), 2)  # TODO try remove next after
-        weights = np.nextafter(weights / summe, 0)
+        weights = weights / sum(weights)
 
         self.goods_details.set_weights_from_full_list(weights)
 
