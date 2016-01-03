@@ -7,6 +7,7 @@ from collections import OrderedDict
 import os
 from sam_to_functions import Sam
 from pprint import pprint
+import iotable
 
 
 def main():
@@ -19,17 +20,17 @@ def main():
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
                              'num_rounds': 60,
-                             'trade_logging': 'off',
+                             'trade_logging': 'group',
                              'num_household': 1,
-                             'num_firms': 50,
+                             'num_firms': 1,
                              'endowment_FFcap': sam.endowment('cap'),
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.2,
+                             'wage_stickiness': 0.0,
                              'price_stickiness': 0.2,
                              'network_weight_stickiness': 0.0,
-                             'dividends_percent': 0.1,
+                             'dividends_percent': 0.0,
                              'production_functions': sam.production_functions(),
                              'hh': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares()}
@@ -77,6 +78,7 @@ def main():
         print(e)
         raise
 
+    iotable.to_iotable(simulation.path)
     simulation.graphs()
 
 if __name__ == '__main__':
