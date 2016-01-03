@@ -9,7 +9,7 @@ from collections import OrderedDict
 import os
 from sam_to_functions import Sam
 from pprint import pprint
-
+import iotable
 
 def main():
     sam = Sam('hirachical_taxes_nx_inv.sam.csv',
@@ -22,7 +22,7 @@ def main():
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
                              'num_rounds': 60,
-                             'trade_logging': 'off',
+                             'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 50,
                              'endowment_FFcap': sam.endowment('cap'),
@@ -90,7 +90,7 @@ def main():
     except Exception as e:
         print(e)
         raise
-
+    iotable.to_iotable(simulation.path)
     simulation.graphs()
 
 if __name__ == '__main__':
