@@ -15,7 +15,7 @@ class Household(abce.Agent, abce.Household):
         self.import_goods = defaultdict(float)
         self.import_goods.update({good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0})
 
-        self.create('money', money)
+        self.create('money', money )
         self.utility = 0
 
         self.final_goods = simulation_parameters['final_goods']
@@ -27,6 +27,8 @@ class Household(abce.Agent, abce.Household):
         self.sells = []
 
     def send_demand(self):
+        if self.round == 40:
+            self.wage_stickiness = 0
         for good, demand in self.import_goods.iteritems():
             if demand > 0:
                 self.message('netexport', 0, good, demand)
@@ -35,7 +37,8 @@ class Household(abce.Agent, abce.Household):
             for i in range(self.num_firms):
                 demand = (self.alpha[final_good] / self.num_firms * (self.possession("money") * (1 - self.investment_share))
                           - self.import_goods[final_good] / self.num_firms)
-                self.message(final_good, i, final_good, demand)
+                if demand > 0:
+                    self.message(final_good, i, final_good, demand)
 
 
     def selling(self):
@@ -54,9 +57,9 @@ class Household(abce.Agent, abce.Household):
                 self.price = price = market_clearing_price
             demand = sum([msg.content / price for msg in ct_messages])
             if demand < self.possession(capital_type):
-                self.rationing = rationing = 1 - float_info.epsilon * self.num_firms
+                self.rationing = rationing = 1 - float_info.epsilon * self.num_firms * 10
             else:
-                self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms
+                self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms * 10
             for msg in ct_messages:
                 sell = self.sell(receiver_group=msg.sender_group,
                                  receiver_idn=msg.sender_idn,
