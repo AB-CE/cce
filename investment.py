@@ -9,7 +9,7 @@ class Investment(abce.Agent, abce.Household):
     def init(self, simulation_parameters, _):
         self.num_firms = num_firms = simulation_parameters['num_firms']
         self.alpha = simulation_parameters['consumption_functions']['inv']
-        self.create('money', simulation_parameters['initial_investment'] )
+        self.create('money', 0 )
         self.set_cobb_douglas_utility_function(self.alpha)
 
     def send_demand(self):

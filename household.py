@@ -14,7 +14,7 @@ class Household(abce.Agent, abce.Household):
         self.import_goods.update({good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0})
 
         self.create('money', simulation_parameters['endowment_FFcap']
-                             + simulation_parameters['endowment_FFlab'])
+                             + simulation_parameters['endowment_FFlab'] + 78.1 - 3 * 20 + simulation_parameters['initial_investment'])
         self.utility = 0
 
         self.final_goods = simulation_parameters['final_goods']
@@ -32,7 +32,7 @@ class Household(abce.Agent, abce.Household):
 
         for final_good in self.final_goods:
             for i in range(self.num_firms):
-                demand = (self.alpha[final_good] / self.num_firms * ( self.possession("money") * (1 - self.investment_share))
+                demand = (self.alpha[final_good] / self.num_firms * (self.possession("money") * (1 - self.investment_share))
                           - self.import_goods[final_good] / self.num_firms)
                 self.message(final_good, i, final_good, demand)
 
