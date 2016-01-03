@@ -10,11 +10,12 @@ class Household(abce.Agent, abce.Household):
         self.num_firms = num_firms = simulation_parameters['num_firms']
         self.wage_stickiness = simulation_parameters['wage_stickiness']
         self.investment_share = simulation_parameters['investment_share']
+        money = simulation_parameters['money'] / 2
+
         self.import_goods = defaultdict(float)
         self.import_goods.update({good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0})
 
-        self.create('money', simulation_parameters['endowment_FFcap']
-                             + simulation_parameters['endowment_FFlab'] + 78.1 - 3 * 20 + simulation_parameters['initial_investment'])
+        self.create('money', money)
         self.utility = 0
 
         self.final_goods = simulation_parameters['final_goods']

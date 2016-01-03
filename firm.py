@@ -97,6 +97,7 @@ class Firm(abce.Agent, abce.Firm):
         self.capital_types = simulation_parameters['capital_types']
         self.output_tax_share = simulation_parameters['output_tax_shares'][self.group]
         production_function = simulation_parameters['production_functions'][self.group]
+        money = simulation_parameters['money'] / 2 / (self.num_firms * len(simulation_parameters['inputs']))
         betas = production_function[1]
 
         self.goods_details = GoodDetails(betas, self.capital_types, self.num_firms)
@@ -105,11 +106,11 @@ class Firm(abce.Agent, abce.Firm):
         self.seed_weights = normalized_random(self.goods_details.num_goods())
         self.goods_details.set_weights_from_full_list(normalized_random(len(self.goods_details)))
 
-        self.create(self.group, 20)   # initial endowment of own good and price must be consistent (=the same)
-        self.create('money', 20)
+        self.create(self.group, 1)   # initial endowment of own good and price must be consistent (=the same)
+        self.create('money', money)
         self.money_1 = self.possession('money')
 
-        self.price = 20
+        self.price = 1
         self.profit = 0
 
         self.b = production_function[0]

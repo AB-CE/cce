@@ -39,7 +39,9 @@ def main():
                              'output_tax_shares': sam.output_tax_shares(),
                              'net_export': sam.endowment_vector('nx'),
                              'investment_share': sam.investment_share('hoh', 'inv'),
-                             'initial_investment': sam.initial_investment('inv')}
+                             'initial_investment': sam.initial_investment('inv'),
+                             'money': sam.money(),
+                             'inputs': sam.inputs}
 
     firms = sam.outputs
     firms_and_household_netexport = firms + ['household', 'netexport']

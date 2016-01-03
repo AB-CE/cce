@@ -94,5 +94,8 @@ class Sam():
     def initial_investment(self, zu):
         return self.column_sum[zu]
 
+    def money(self):
+        return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax]
+
 
 
