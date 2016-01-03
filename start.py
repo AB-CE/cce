@@ -42,7 +42,6 @@ def main():
                              'initial_investment': sam.initial_investment('inv'),
                              'money': sam.money(),
                              'inputs': sam.inputs,
-                             'nx_utility_function': sam.nx_utility_function(),
                              'balance_of_payment': sam.balance_of_payment('nx', 'inv')}
 
     firms = sam.outputs

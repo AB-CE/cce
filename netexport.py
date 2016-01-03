@@ -64,7 +64,6 @@ class NetExport(abce.Agent):
 
     def investing(self):
         self.give('inv', 0, good='money', quantity=min(self.possession('money'), self.balance_of_payment))
-        print self.balance_of_paymen
 
     def stats(self):
         self.sales = sum([sale['final_quantity'] for sale in self.made_sales])
