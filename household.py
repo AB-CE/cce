@@ -73,7 +73,8 @@ class Household(abce.Agent, abce.Household):
     def investing(self):
         self.sales_earning = sum([sell['final_quantity'] for sell in self.sells])
         self.sells = []
-        quantity = self.investment_share * self.sales_earning
+        tax_return = self.get_messages('tax_return')[0].content
+        quantity = self.investment_share * (self.sales_earning + tax_return)
         self.give('investment', 0, good='money', quantity=quantity)
         self.investment = quantity
 
