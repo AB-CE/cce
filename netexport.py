@@ -9,6 +9,7 @@ class NetExport(abce.Agent):
     def init(self, simulation_parameters, _):
         self.num_firms = simulation_parameters['num_firms']
         self.import_price_stickiness = simulation_parameters['import_price_stickiness']
+        self.balance_of_payment = simulation_parameters['balance_of_payment']
         self.want_goods = {good: value for good, value in simulation_parameters['net_export'].iteritems() if value > 0}
         self.total_want = sum(self.want_goods.values())
         self.offer_goods = {good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0}
@@ -60,6 +61,10 @@ class NetExport(abce.Agent):
     def consuming(self):
         for good in self.want_goods:
             self.destroy(good, self.possession(good))
+
+    def investing(self):
+        self.give('inv', 0, good='money', quantity=min(self.possession('money'), self.balance_of_payment))
+        print self.balance_of_paymen
 
     def stats(self):
         self.sales = sum([sale['final_quantity'] for sale in self.made_sales])

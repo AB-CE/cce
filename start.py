@@ -12,16 +12,16 @@ from pprint import pprint
 import iotable
 
 def main():
-    sam = Sam('hirachical_taxes_nx_inv.sam.csv',
-              inputs=['cap', 'lab', 'tools'],
-              outputs=['brd', 'mlk', 'tools'],
+    sam = Sam('climate_square.sam.csv',
+              inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
+              outputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
               output_tax='tax',
-              consumption=['brd', 'mlk'],
+              consumption=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
               consumers=['hoh', 'inv'])
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 60,
+                             'num_rounds': 250,
                              'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 1,
@@ -29,8 +29,8 @@ def main():
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.0,
-                             'price_stickiness': 0.0,
+                             'wage_stickiness': 0.2,
+                             'price_stickiness': 0.2,
                              'network_weight_stickiness': 0.0,
                              'import_price_stickiness': 0.0,
                              'dividends_percent': 0.0,
@@ -41,23 +41,25 @@ def main():
                              'investment_share': sam.investment_share('hoh', 'inv'),
                              'initial_investment': sam.initial_investment('inv'),
                              'money': sam.money(),
-                             'inputs': sam.inputs}
+                             'inputs': sam.inputs,
+                             'nx_utility_function': sam.nx_utility_function(),
+                             'balance_of_payment': sam.balance_of_payment('nx', 'inv')}
 
     firms = sam.outputs
     firms_and_household_netexport = firms + ['household', 'netexport']
     simulation = Simulation(simulation_parameters)
-    action_list = [(firms_and_household_netexport + ['investment'], 'send_demand'),
-                   (firms_and_household_netexport, 'selling'),
-                   (firms_and_household_netexport + ['investment'], 'buying'),
+    action_list = [(firms_and_household_netexport + ['inv'], 'send_demand'),
+                   (firms_and_household_netexport + ['inv'], 'selling'),
+                   (firms_and_household_netexport + ['inv'], 'buying'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
-                   ('household', 'investing'),
+                   (('household', 'netexport'), 'investing'),
                    (firms, 'production'),
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms + ['netexport'], 'stats'),
                    (firms_and_household_netexport, 'aggregate'),
-                   (('household', 'netexport', 'investment'), 'consuming'),
+                   (('household', 'netexport', 'inv'), 'consuming'),
                    ('government', 'aggregate')]
     simulation.add_action_list(action_list)
 
@@ -85,7 +87,7 @@ def main():
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
     simulation.build_agents(Household, simulation_parameters['num_household'])
     simulation.build_agents(NetExport, 1)
-    simulation.build_agents(Investment, 1)
+    simulation.build_agents(Investment, 1, group_name='inv')
     simulation.build_agents(Government, 1)
     try:
         simulation.run()

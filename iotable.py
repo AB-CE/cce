@@ -16,17 +16,17 @@ def to_iotable(name, rounds=None):
         quantities = grouped_table.sum()['quantity']
         prices = grouped_table.mean()['price']
         quantities = quantities.unstack()
-        quantities = quantities.reindex_axis(['brd', 'mlk', 'tools', 'household', 'investment', 'netexport'], axis=0)
-        quantities = quantities.reindex_axis(['brd', 'mlk', 'tools', 'household', 'investment', 'netexport'], axis=1)
+        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
+        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
         quantities = quantities.replace(np.NaN, 0)
         prices = prices.unstack()
-        prices = prices.reindex_axis(['brd', 'mlk', 'tools', 'household', 'investment', 'netexport'], axis=0)
-        prices = prices.reindex_axis(['brd', 'mlk', 'tools', 'household', 'investment', 'netexport'], axis=1)
+        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
+        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
         prices = prices.replace(np.NaN, 0)
-        print '***\tquantities\t***'
-        print quantities
         print '***\tprice\t***'
         print prices
+        print '***\tquantities\t***'
+        print quantities
         return quantities
 
 
