@@ -105,7 +105,7 @@ class Firm(abce.Agent, abce.Firm):
         self.seed_weights = normalized_random(self.goods_details.num_goods())
         self.goods_details.set_weights_from_full_list(normalized_random(len(self.goods_details)))
 
-        self.create(self.group, random.uniform(0, 1))
+        self.create(self.group, random.uniform(0, 1))  # initial endowment of own good and price must be consistent (=the same)
         self.create('money', random.uniform(0, 1))
         self.money_1 = self.possession('money')
 
