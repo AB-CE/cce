@@ -29,11 +29,11 @@ def main():
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.2,
+                             'wage_stickiness': 0.0,
                              'price_stickiness': 0.2,
                              'network_weight_stickiness': 0.0,
-                             'import_price_stickiness': 0.1,
-                             'dividends_percent': 0.1,
+                             'import_price_stickiness': 0.0,
+                             'dividends_percent': 0.0,
                              'production_functions': sam.production_functions(),
                              'consumption_functions': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares(),
@@ -63,8 +63,8 @@ def main():
     simulation.declare_service('endowment_FFlab', 1, 'lab')
 
     simulation.aggregate('household',
-                         possessions=['money'],
-                         variables=['investment', 'sales_earning'])
+                         possessions=['money', 'labor'],
+                         variables=['investment', 'sales_earning', 'rationing'])
 
     simulation.aggregate('netexport',
                          possessions=['brd', 'mlk', 'money'],
