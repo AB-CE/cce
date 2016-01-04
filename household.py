@@ -12,10 +12,7 @@ class Household(abce.Agent, abce.Household):
         self.investment_share = simulation_parameters['investment_share']
         money = simulation_parameters['money'] / 2
 
-        self.import_goods = defaultdict(float)
-        self.import_goods.update({good: - value for good, value in simulation_parameters['net_export'].iteritems() if value < 0})
-
-        self.create('money', money )
+        self.create('money', money + 1000000 )
         self.utility = 0
 
         self.final_goods = simulation_parameters['final_goods']
@@ -27,16 +24,9 @@ class Household(abce.Agent, abce.Household):
         self.sells = []
 
     def send_demand(self):
-        if self.round == 40:
-            self.wage_stickiness = 0
-        for good, demand in self.import_goods.iteritems():
-            if demand > 0:
-                self.message('netexport', 0, good, demand)
-
         for final_good in self.final_goods:
             for i in range(self.num_firms):
-                demand = (self.alpha[final_good] / self.num_firms * (self.possession("money") * (1 - self.investment_share))
-                          - self.import_goods[final_good] / self.num_firms)
+                demand = self.alpha[final_good] / self.num_firms * (self.possession("money") * (1 - self.investment_share))
                 if demand > 0:
                     self.message(final_good, i, final_good, demand)
 
