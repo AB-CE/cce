@@ -11,7 +11,7 @@ import iotable
 
 
 def main():
-    sam = Sam('hirachical_taxes.sam.csv',
+    sam = Sam('hirachical_taxes_nx.sam.csv',
               inputs=['cap', 'lab', 'tools'],
               outputs=['brd', 'mlk', 'tools'],
               output_tax='tax',
@@ -28,22 +28,25 @@ def main():
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
                              'wage_stickiness': 0.0,
-                             'price_stickiness': 0.2,
+                             'price_stickiness': 0.0,
                              'network_weight_stickiness': 0.0,
                              'dividends_percent': 0.0,
                              'production_functions': sam.production_functions(),
                              'hh': sam.utility_function(),
-                             'output_tax_shares': sam.output_tax_shares()}
+                             'output_tax_shares': sam.output_tax_shares(),
+                             'sam': sam}
 
     firms = sam.outputs
     firms_and_household = firms + ['household']
     simulation = Simulation(simulation_parameters)
-    action_list = [(firms_and_household, 'send_demand'),
+    action_list = [
+                   (firms_and_household, 'send_demand'),
                    (firms_and_household, 'selling'),
                    (firms_and_household, 'buying'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
                    (firms, 'production'),
+                   (firms, 'international_trade'),
                    (firms, 'dividends'),
                    ('household', 'consuming'),
                    (firms, 'change_weights'),
