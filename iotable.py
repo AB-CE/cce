@@ -19,6 +19,8 @@ def to_iotable(name, rounds=None):
         quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
         quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
         quantities = quantities.replace(np.NaN, 0)
+        quantities['sum'] = sum([quantities[name] for name in quantities.columns])
+        quantities.ix['sum'] = sum([quantities.ix[name] for name in quantities.T.columns])
         prices = prices.unstack()
         prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
         prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
@@ -38,4 +40,4 @@ def to_iotable(name, rounds=None):
 
 
 if __name__ == '__main__':
-    table = to_iotable('./result/cce_2016-01-03_10-19/')
+    quantities = to_iotable('./result/cce_2016-01-03_21-25I/')
