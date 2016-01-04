@@ -154,7 +154,7 @@ class Firm(abce.Agent, abce.Firm):
                 self.sales.append(sale)
 
     def taxes(self):
-        total_sales = sum([sale['final_quantity'] for sale in self.sales])
+        total_sales = sum([sale['final_quantity'] * sale['price'] for sale in self.sales])
 
         tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
 
