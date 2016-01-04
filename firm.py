@@ -99,6 +99,8 @@ class Firm(abce.Agent, abce.Firm):
         production_function = simulation_parameters['production_functions'][self.group]
         money = simulation_parameters['money'] / 2 / (self.num_firms * len(simulation_parameters['inputs']))
         betas = production_function[1]
+        sam = simulation_parameters['sam']
+        self.value_of_international_sales = sam.endowment_vector('nx')[self.group]
 
         self.goods_details = GoodDetails(betas, self.capital_types, self.num_firms)
         self.goods_details.set_prices_from_list(normalized_random(len(self.goods_details)))
@@ -117,6 +119,19 @@ class Firm(abce.Agent, abce.Firm):
         self.beta = {good: value for good, value in production_function[1].iteritems() if value > 0}
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
+        self.international_trade_income = 0
+
+    def international_trade(self):
+        if self.value_of_international_sales > 0:
+            value = min(self.value_of_international_sales, self.possession(self.group))
+            self.destroy(self.group, value)
+            self.create('money', value * self.price)
+            self.international_trade_income = value * self.price
+        else:
+            value = min(- self.value_of_international_sales, self.possession('money') / self.price)
+            self.create(self.group, value)
+            self.destroy('money', value * self.price)
+            self.international_trade_income = 0 # - value * self.price
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
@@ -156,7 +171,7 @@ class Firm(abce.Agent, abce.Firm):
     def taxes(self):
         total_sales = sum([sale['final_quantity'] * sale['price'] for sale in self.sales])
 
-        tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
+        tax = ((total_sales + self.international_trade_income) * self.output_tax_share) / (1 + self.output_tax_share)
 
         self.give('government', 0, good='money', quantity=min(self.possession('money'), tax))
 

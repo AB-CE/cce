@@ -12,7 +12,7 @@ class Household(abce.Agent, abce.Household):
         self.investment_share = simulation_parameters['investment_share']
         money = simulation_parameters['money'] / 2
 
-        self.create('money', money + 1000000 )
+        self.create('money', money )
         self.utility = 0
 
         self.final_goods = simulation_parameters['final_goods']

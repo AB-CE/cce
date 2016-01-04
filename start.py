@@ -10,6 +10,7 @@ from sam_to_functions import Sam
 from pprint import pprint
 import iotable
 
+
 def main():
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
@@ -20,7 +21,7 @@ def main():
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 250,
+                             'num_rounds': 60,
                              'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 1,
@@ -28,8 +29,8 @@ def main():
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.2,
-                             'price_stickiness': 0.2,
+                             'wage_stickiness': 0.0,
+                             'price_stickiness': 0.0,
                              'network_weight_stickiness': 0.0,
                              'import_price_stickiness': 0.0,
                              'dividends_percent': 0.0,
@@ -40,7 +41,9 @@ def main():
                              'initial_investment': sam.initial_investment('inv'),
                              'money': sam.money(),
                              'inputs': sam.inputs,
-                             'balance_of_payment': sam.balance_of_payment('nx', 'inv')}
+                             'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
+                             'sam': sam}
+
 
     firms = sam.outputs
     firms_and_household = firms + ['household']
@@ -52,6 +55,7 @@ def main():
                    ('government', 'taxes_to_household'),
                    (('household'), 'investing'),
                    (firms, 'production'),
+                   (firms, 'international_trade'),
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms, 'stats'),
@@ -66,10 +70,6 @@ def main():
     simulation.aggregate('household',
                          possessions=['money', 'labor'],
                          variables=['investment', 'sales_earning', 'rationing'])
-
-    simulation.aggregate('netexport',
-                         possessions=['brd', 'mlk', 'money'],
-                         variables=['sales'])
 
     simulation.aggregate('government',
                          variables=['money'])
