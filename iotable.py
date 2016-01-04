@@ -18,14 +18,14 @@ def to_iotable(name, rounds=None):
         prices = grouped_table.mean()['price']
         value = quantities * prices
         quantities = quantities.unstack()
-        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
-        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
+        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=1)
+        quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=0)
         quantities = quantities.replace(np.NaN, 0)
         quantities['sum'] = sum([quantities[name] for name in quantities.columns])
         quantities.ix['sum'] = sum([quantities.ix[name] for name in quantities.T.columns])
         prices = prices.unstack()
-        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
-        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
+        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=0)
+        prices = prices.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=1)
         prices = prices.replace(np.NaN, 0)
 
         table['value'] = table['quantity'] * table['price']
@@ -33,8 +33,8 @@ def to_iotable(name, rounds=None):
         vgrouped_table = table.groupby(['seller', 'buyer'])
         values = vgrouped_table.sum()['value']
         values = values.unstack()
-        values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=1)
-        values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'tax', 'household', 'inv', 'netexport'], axis=0)
+        values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=1)
+        values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=0)
         values = values.replace(np.NaN, 0)
         print '***\tvalues\t***'
         print values

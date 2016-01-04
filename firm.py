@@ -119,19 +119,16 @@ class Firm(abce.Agent, abce.Firm):
         self.beta = {good: value for good, value in production_function[1].iteritems() if value > 0}
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
-        self.international_trade_income = 0
+        self.sales = []
 
     def international_trade(self):
         if self.value_of_international_sales > 0:
             value = min(self.value_of_international_sales, self.possession(self.group))
-            self.destroy(self.group, value)
-            self.create('money', value * self.price)
-            self.international_trade_income = value * self.price
+            sale = self.sell('netexport', 0, good=self.group, quantity=value, price=self.price)
+            self.sales.append(sale)
         else:
             value = min(- self.value_of_international_sales, self.possession('money') / self.price)
-            self.create(self.group, value)
-            self.destroy('money', value * self.price)
-            self.international_trade_income = 0 # - value * self.price
+            self.buy('netexport', 0, good=self.group, quantity=value, price=self.price)
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
@@ -157,7 +154,7 @@ class Firm(abce.Agent, abce.Firm):
                 self.rationing = rationing = 1 - float_info.epsilon * self.num_firms * 10
             else:
                 self.rationing = rationing = max(0, self.possession(self.group) / demand - float_info.epsilon * self.num_firms * 10)
-            self.sales = []
+
             for msg in messages:
                 quantity = msg.content / self.price * rationing
                 assert not np.isnan(quantity), (msg.content, self.price, rationing)
@@ -170,9 +167,8 @@ class Firm(abce.Agent, abce.Firm):
 
     def taxes(self):
         total_sales = sum([sale['final_quantity'] * sale['price'] for sale in self.sales])
-
-        tax = ((total_sales + self.international_trade_income) * self.output_tax_share) / (1 + self.output_tax_share)
-
+        self.sales = []
+        tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
         self.give('government', 0, good='money', quantity=min(self.possession('money'), tax))
 
     def buying(self):

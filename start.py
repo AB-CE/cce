@@ -3,6 +3,7 @@ from firm import Firm
 from household import Household
 from investment import Investment
 from government import Government
+from netexport import NetExport
 from abce import Simulation
 from collections import OrderedDict
 import os
@@ -21,7 +22,7 @@ def main():
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 60,
+                             'num_rounds': 250,
                              'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 1,
@@ -53,9 +54,11 @@ def main():
                    (firms_and_household + ['inv'], 'buying'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
-                   (('household'), 'investing'),
                    (firms, 'production'),
                    (firms, 'international_trade'),
+                   ('netexport', 'international_trade'),
+                   ('household', 'balance_balance_of_payment'),
+                   (('household'), 'investing'),
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms, 'stats'),
@@ -85,6 +88,7 @@ def main():
     simulation.build_agents(Household, simulation_parameters['num_household'])
     simulation.build_agents(Investment, 1, group_name='inv')
     simulation.build_agents(Government, 1)
+    simulation.build_agents(NetExport, 1)
     try:
         simulation.run()
     except Exception as e:

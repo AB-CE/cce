@@ -74,3 +74,7 @@ class Household(abce.Agent, abce.Household):
 
     def consuming(self):
         self.utility = self.consume_everything()
+
+    def balance_balance_of_payment(self):
+        offer = self.get_offers('money')[0]
+        self.accept(offer)
