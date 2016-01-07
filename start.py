@@ -5,7 +5,7 @@ from investment import Investment
 from government import Government
 from netexport import NetExport
 from abce import Simulation
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import os
 from sam_to_functions import Sam
 from pprint import pprint
@@ -19,10 +19,18 @@ def main():
               output_tax='tax',
               consumption=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
               consumers=['hoh', 'inv'])
+    carbon_prod = defaultdict(float)
+    carbon_prod.update({'col': 2112 * 1e-4,
+                        'oil': 2439.4 * 1e-4,
+                        'gas': 1244.3 * 1e-4})
+    print 'carbon_prod'
+    print carbon_prod
+
 
     simulation_parameters = {'name': 'cce',
                              'random_seed': None,
-                             'num_rounds': 250,
+                             'num_rounds': 200,
+                             'tax_change_time': 100,
                              'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 1,
@@ -43,13 +51,16 @@ def main():
                              'money': sam.money(),
                              'inputs': sam.inputs,
                              'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
-                             'sam': sam}
+                             'sam': sam,
+                             'carbon_prod': carbon_prod,
+                             'carbon_tax': 50}
 
 
     firms = sam.outputs
     firms_and_household = firms + ['household']
     simulation = Simulation(simulation_parameters)
-    action_list = [(firms_and_household + ['inv'], 'send_demand'),
+    action_list = [(firms, 'taxes_intervention'),
+                   (firms_and_household + ['inv'], 'send_demand'),
                    (firms_and_household + ['inv'], 'selling'),
                    (firms_and_household + ['inv'], 'buying'),
                    (firms, 'taxes'),
@@ -94,7 +105,7 @@ def main():
     except Exception as e:
         print(e)
         raise
-    iotable.to_iotable(simulation.path)
+    iotable.to_iotable(simulation.path, [99,199])
     simulation.graphs()
 
 if __name__ == '__main__':

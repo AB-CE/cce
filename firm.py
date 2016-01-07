@@ -101,6 +101,10 @@ class Firm(abce.Agent, abce.Firm):
         betas = production_function[1]
         sam = simulation_parameters['sam']
         self.value_of_international_sales = sam.endowment_vector('nx')[self.group]
+        self.tax_change_time = simulation_parameters['tax_change_time']
+        self.carbon_prod = simulation_parameters['carbon_prod'][self.group] / (sam.column_sum[self.group] - sam.entries[self.group]['nx'])
+        self.carbon_tax_after = simulation_parameters['carbon_tax'] * 12 / 44
+        self.carbon_tax = 0
 
         self.goods_details = GoodDetails(betas, self.capital_types, self.num_firms)
         self.goods_details.set_prices_from_list(normalized_random(len(self.goods_details)))
@@ -120,6 +124,10 @@ class Firm(abce.Agent, abce.Firm):
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
         self.sales = []
+
+    def taxes_intervention(self):
+        if self.round == self.tax_change_time:
+            self.carbon_tax = self.carbon_tax_after
 
     def international_trade(self):
         if self.value_of_international_sales > 0:
@@ -147,7 +155,7 @@ class Firm(abce.Agent, abce.Firm):
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
         if self.possession(self.group) > 0:
-            market_clearing_price = sum(nominal_demand) / self.possession(self.group)
+            market_clearing_price = sum(nominal_demand) / self.possession(self.group) * (1 + self.output_tax_share) + (self.carbon_tax * self.carbon_prod)
             self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
             demand = sum([msg.content / self.price for msg in messages])
             if demand < self.possession(self.group):
@@ -166,10 +174,13 @@ class Firm(abce.Agent, abce.Firm):
                 self.sales.append(sale)
 
     def taxes(self):
+        total_sales_quantity = sum([sale['final_quantity'] for sale in self.sales])
         total_sales = sum([sale['final_quantity'] * sale['price'] for sale in self.sales])
-        self.sales = []
         tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
-        self.give('government', 0, good='money', quantity=min(self.possession('money'), tax))
+        carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax / (1 + self.carbon_prod * self.carbon_tax)
+        #self.log('carbon', {'tax', carbon_tax})
+        self.give('government', 0, good='money', quantity=min(self.possession('money'), tax + carbon_tax))
+        self.sales = []
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
@@ -200,7 +211,8 @@ class Firm(abce.Agent, abce.Firm):
                            beta=self.goods_details.betas,
                            method='SLSQP')
         if not opt.success:
-            print self.round, self.name, opt.message, self.goods_details.list_of_cheapest_offers()
+            print self.round, self.name, opt.message
+            print zip(self.goods_details.goods.keys(), self.goods_details.list_of_cheapest_offers().tolist())
             raise Exception('Optimization error')
 
         self.seed_weights = opt.x
@@ -215,8 +227,6 @@ class Firm(abce.Agent, abce.Firm):
         weights = weights / sum(weights)
 
         self.goods_details.set_weights_from_full_list(weights)
-
-
 
     def stats(self):
         """ helper for statistics """
