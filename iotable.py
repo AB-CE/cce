@@ -23,6 +23,7 @@ def to_iotable(name, rounds=None):
         quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=1)
         quantities = quantities.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=0)
         quantities = quantities.replace(np.NaN, 0)
+        quantities['netexport'] = quantities['netexport'] - quantities.ix['netexport']
         quantities['sum'] = sum([quantities[name] for name in quantities.columns])
         quantities.ix['sum'] = sum([quantities.ix[name] for name in quantities.T.columns])
         prices = prices.unstack()
