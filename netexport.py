@@ -16,6 +16,7 @@ class NetExport(abce.Agent):
         self.log('', {'trade_surplus': trade_surplus})
         self.take('household', 0, good='money', quantity=max(0, - trade_surplus))
         self.give('household', 0, good='money', quantity=max(0, trade_surplus))
+        self.message('household', 0, 'nx', trade_surplus)
         self.log('money', self.possession('money'))
 
 
