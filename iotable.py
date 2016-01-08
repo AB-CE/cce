@@ -4,12 +4,14 @@ import numpy as np
 
 pd.set_option('expand_frame_repr', False)
 pd.set_option('precision', 3)
-
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def to_iotable(name, rounds=None):
     df = pd.read_csv(name + '/trade.csv')
     if rounds is None:
         rounds = [max(df['round'])]
+    q = []
+    p = []
     for round in rounds:
         table = df[df['round'] == round]
         table.drop(['round', 'index'], axis=1, inplace=True)
@@ -40,9 +42,18 @@ def to_iotable(name, rounds=None):
         print values
         print '***\tprice\t***'
         print prices
+        p.append(prices)
         print '***\tquantities\t***'
         print quantities
-        return value
+        q.append(quantities)
+        print '***\trelative\t***'
+        print
+    pd.set_option('display.float_format', lambda x: '%.2f' % x)
+    print 'p'
+    print p[1] / p[0] - 1
+    print 'q'
+    print q[1] / q[0] - 1
+    return value
 
 
 
