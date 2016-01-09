@@ -18,7 +18,7 @@ class Sam():
 
         # loads the table as dict of dict
         entries = defaultdict(dict)
-        with open(name) as csvfile:
+        with open(name,'rU') as csvfile:
             reader = csv.DictReader(csvfile)
             fields = copy(reader.fieldnames)
             fields.remove('index')
