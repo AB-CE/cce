@@ -19,10 +19,12 @@ def main():
               output_tax='tax',
               consumption=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
               consumers=['hoh', 'inv'])
+    """ reads the social accounting matrix and returns coefficients of a cobb-douglas model """
     carbon_prod = defaultdict(float)
     carbon_prod.update({'col': 2112 * 1e-4,
                         'oil': 2439.4 * 1e-4,
                         'gas': 1244.3 * 1e-4})
+    """ this is the co2 output per sector at the base year """
     print 'carbon_prod'
     print carbon_prod
 
@@ -58,6 +60,7 @@ def main():
 
     firms = sam.outputs
     firms_and_household = firms + ['household']
+
     simulation = Simulation(simulation_parameters)
     action_list = [(firms, 'taxes_intervention'),
                    (firms_and_household + ['inv'], 'send_demand'),
@@ -76,14 +79,18 @@ def main():
                    (firms_and_household, 'aggregate'),
                    (('household', 'inv'), 'consuming'),
                    ('government', 'aggregate')]
+
     simulation.add_action_list(action_list)
 
     simulation.declare_service('endowment_FFcap', 1, 'cap')
     simulation.declare_service('endowment_FFlab', 1, 'lab')
+    """ every round for every endowment_FFcap the owner gets one good of lab
+    similar for cap"""
 
     simulation.aggregate('household',
                          possessions=['money', 'labor'],
                          variables=['investment', 'sales_earning', 'rationing'])
+    """ collect data """
 
     simulation.aggregate('government',
                          variables=['money'])
@@ -104,7 +111,7 @@ def main():
         simulation.run()
     except Exception as e:
         print(e)
-        raise
+        # raise  # put raise for full traceback but no graphs in case of error
     iotable.to_iotable(simulation.path, [99,199])
     simulation.graphs()
 

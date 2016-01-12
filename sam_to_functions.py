@@ -13,10 +13,13 @@ def float_or_zero(value):
 
 class Sam():
     def __init__(self, name, inputs, outputs, output_tax, consumption, consumers):
+        """ read the sam matrix into self.entries column sums in self.column_sum
+
+        Table must have index as upper left title, column sum titled sum are not
+        read. Everything in and after the row that begin with sum is ignored """
         self.inputs, self.outputs, self.output_tax = inputs, outputs, output_tax
         self.consumption, self.consumers = consumption, consumers
 
-        # loads the table as dict of dict
         entries = defaultdict(dict)
         with open(name,'rU') as csvfile:
             reader = csv.DictReader(csvfile)
@@ -31,7 +34,6 @@ class Sam():
                     if cellindex not in ['index', 'sum']:
                         entries[rowindex][cellindex] = float_or_zero(cell)
 
-    # sums the columns
         column_sum = {}
         for col in fields:
             column_sum[col] = sum(item[col] for item in entries.values())
@@ -52,6 +54,10 @@ class Sam():
         return utility_functions
 
     def production_functions(self):
+        """ returns the the tax adjusted cobb-douglas parameters as a per firm
+        dictionary of tuples, the
+        tuple contains the scalar b and a dictionary with the cobb-douglas
+        coefficients """
         entries, column_sum = self.entries, self.column_sum
         output_tax_shares = self.output_tax_shares()
         betas = defaultdict(dict)
@@ -73,6 +79,7 @@ class Sam():
         return production_functions
 
     def output_tax_shares(self):
+        """ returns how much of each firms output is taxed in an output tax """
         entries, column_sum, output_tax = self.entries, self.column_sum, self.output_tax
         output_tax_shares = {}
         for firm in self.outputs:
@@ -82,13 +89,16 @@ class Sam():
         return output_tax_shares
 
     def endowment(self, name):
+        """ returns the endowment of the whole economy for each factor """
         assert name in self.inputs
         return self.column_sum[name]
 
     def endowment_vector(self, column):
+        """ return the each row entry for a column """
         return {row_name: self.entries[row_name][column] for row_name in self.entries}
 
     def investment_share(self, von, zu):
+        """ returns  """
         return self.column_sum[zu] / sum(self.entries[von].values())
 
     def initial_investment(self, zu):
