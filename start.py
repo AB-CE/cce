@@ -60,7 +60,7 @@ def main():
     firms = sam.outputs
     firms_and_household = firms + ['household']
 
-    simulation = Simulation(rounds=simulation_parameters['num_rounds'], trade_logging='group')
+    simulation = Simulation(rounds=simulation_parameters['num_rounds'], trade_logging='group', processes=1)
     action_list = [(firms, 'taxes_intervention'),
                    (firms_and_household + ['inv'], 'send_demand'),
                    (firms_and_household + ['inv'], 'selling'),
