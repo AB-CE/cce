@@ -19,7 +19,7 @@ def normalized_random(length):
 class GoodDetails:
     def __init__(self, betas, capital_types, num_firms):
         self.entities = OrderedDict()
-        self.idns = OrderedDict()
+        self.ids = OrderedDict()
         self.goods = OrderedDict()
         self.prices = OrderedDict()
         self.weights = OrderedDict()
@@ -29,16 +29,16 @@ class GoodDetails:
                 self.betas.append(value)
                 if good in capital_types:
                     self.entities[good] = ['household']
-                    self.idns[good] = [0]
+                    self.ids[good] = [0]
                     self.goods[good] = [good]
                     self.prices[good] = [None]
                     self.weights[good] = [None]
                 else:
-                    self.entities[good] = [good for idn in range(num_firms)]
-                    self.idns[good] = [idn for idn in range(num_firms)]
-                    self.goods[good] = [good for idn in range(num_firms)]
-                    self.prices[good] = [None for idn in range(num_firms)]
-                    self.weights[good] = [None for idn in range(num_firms)]
+                    self.entities[good] = [good for id in range(num_firms)]
+                    self.ids[good] = [id for id in range(num_firms)]
+                    self.goods[good] = [good for id in range(num_firms)]
+                    self.prices[good] = [None for id in range(num_firms)]
+                    self.weights[good] = [None for id in range(num_firms)]
 
     def list_of_cheapest_offers(self):
         cheapest_offers = []
@@ -84,7 +84,7 @@ class GoodDetails:
 
     def __iter__(self):
         for good in self.entities:
-            for x in zip(self.entities[good], self.idns[good], self.goods[good], self.prices[good], self.weights[good]):
+            for x in zip(self.entities[good], self.ids[good], self.goods[good], self.prices[good], self.weights[good]):
                 yield x
 
 
@@ -140,8 +140,8 @@ class Firm(abce.Agent, abce.Firm):
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """
-        for entity, idn, good, _, weight in self.goods_details:
-            self.message(entity, idn,
+        for entity, id, good, _, weight in self.goods_details:
+            self.message(entity, id,
                          good,
                          weight * self.possession('money'))
 
@@ -166,16 +166,16 @@ class Firm(abce.Agent, abce.Firm):
             for msg in messages:
                 quantity = msg.content / self.price * rationing
                 assert not np.isnan(quantity), (msg.content, self.price, rationing)
-                sale = self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=quantity, price=self.price)
+                sale = self.sell(msg.sender_group, receiver_id=msg.sender_id, good=self.group, quantity=quantity, price=self.price)
                 self.sales.append(sale)
         else:
             for msg in messages:
-                sale = self.sell(msg.sender_group, receiver_idn=msg.sender_idn, good=self.group, quantity=0, price=self.price)
+                sale = self.sell(msg.sender_group, receiver_id=msg.sender_id, good=self.group, quantity=0, price=self.price)
                 self.sales.append(sale)
 
     def taxes(self):
-        total_sales_quantity = sum([sale['final_quantity'] for sale in self.sales])
-        total_sales = sum([sale['final_quantity'] * sale['price'] for sale in self.sales])
+        total_sales_quantity = sum([sale.final_quantity for sale in self.sales])
+        total_sales = sum([sale.final_quantity * sale.price for sale in self.sales])
         tax = (total_sales * self.output_tax_share) / (1 + self.output_tax_share)
         carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax / (1 + self.carbon_prod * self.carbon_tax)
         #self.log('carbon', {'tax', carbon_tax})
@@ -188,7 +188,7 @@ class Firm(abce.Agent, abce.Firm):
         for offers in self.get_offers_all().values():
             for offer in offers:
                 self.accept(offer)
-                self.goods_details.set_price(offer['good'], offer['sender_idn'], offer['price'])
+                self.goods_details.set_price(offer.good, offer.sender_id, offer.price)
 
     def production(self):
         """ produce using all goods and labor """

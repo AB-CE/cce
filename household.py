@@ -52,7 +52,7 @@ class Household(abce.Agent, abce.Household):
                 self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms * 10
             for msg in ct_messages:
                 sell = self.sell(receiver_group=msg.sender_group,
-                                 receiver_idn=msg.sender_idn,
+                                 receiver_id=msg.sender_id,
                                  good=capital_type,
                                  quantity=msg.content / price * rationing,
                                  price=price)
@@ -65,7 +65,7 @@ class Household(abce.Agent, abce.Household):
                 self.accept(offer)
 
     def investing(self):
-        self.sales_earning = sum([sell['final_quantity'] * sell['price'] for sell in self.sells])
+        self.sales_earning = sum([sell.final_quantity * sell.price for sell in self.sells])
         self.sells = []
         tax_return = self.get_messages('tax_return')[0].content
         nx_balance = self.get_messages('nx')[0].content

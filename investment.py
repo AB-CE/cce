@@ -43,7 +43,7 @@ class Investment(abce.Agent, abce.Household):
                 self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms
             for msg in ct_messages:
                 self.sell(receiver_group=msg.sender_group,
-                          receiver_idn=msg.sender_idn,
+                          receiver_id=msg.sender_id,
                           good=capital_type,
                           quantity=msg.content / price * rationing,
                           price=price)

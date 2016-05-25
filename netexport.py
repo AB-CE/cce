@@ -9,8 +9,8 @@ class NetExport(abce.Agent):
         money_before = self.possession('money')
         for group in self.get_offers_all().values():
             for offer in group:
-                if offer['buysell'] == 'b':
-                    self.create(offer['good'], offer['quantity'])
+                if offer.buysell == 98:
+                    self.create(offer.good, offer.quantity)
                 self.accept(offer)
         trade_surplus = self.possession('money') - money_before
         self.log('', {'trade_surplus': trade_surplus})

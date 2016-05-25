@@ -33,7 +33,6 @@ def main():
                              'random_seed': None,
                              'num_rounds': 200,
                              'tax_change_time': 100,
-                             'trade_logging': 'group',
                              'num_household': 1,
                              'num_firms': 1,
                              'endowment_FFcap': sam.endowment('cap'),
@@ -61,7 +60,7 @@ def main():
     firms = sam.outputs
     firms_and_household = firms + ['household']
 
-    simulation = Simulation(simulation_parameters)
+    simulation = Simulation(rounds=simulation_parameters['num_rounds'], trade_logging='group')
     action_list = [(firms, 'taxes_intervention'),
                    (firms_and_household + ['inv'], 'send_demand'),
                    (firms_and_household + ['inv'], 'selling'),
@@ -102,11 +101,11 @@ def main():
                                         'inventory', 'rationing'])
 
     for good in firms:
-        simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good)
-    simulation.build_agents(Household, simulation_parameters['num_household'])
-    simulation.build_agents(Investment, 1, group_name='inv')
-    simulation.build_agents(Government, 1)
-    simulation.build_agents(NetExport, 1)
+        simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
+    simulation.build_agents(Household, 'household', simulation_parameters['num_household'], parameters=simulation_parameters)
+    simulation.build_agents(Investment, 'inv', 1, parameters=simulation_parameters)
+    simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
+    simulation.build_agents(NetExport, 'netexport', 1, parameters=simulation_parameters)
     try:
         simulation.run()
     except Exception as e:
