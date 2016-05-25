@@ -84,8 +84,8 @@ class Sam():
         output_tax_shares = {}
         for firm in self.outputs:
             output_tax_shares[firm] = (entries[output_tax][firm]
-                                       / sum([entries[input][firm]
-                                              for input in self.inputs]))
+                                       / (sum([entries[input][firm]
+                                              for input in self.inputs]) + entries[output_tax][firm]))
         return output_tax_shares
 
     def endowment(self, name):
@@ -105,7 +105,7 @@ class Sam():
         return self.column_sum[zu]
 
     def money(self):
-        return 3250
+        return 3225
         #return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax] - 2 * 26.476
 
     def balance_of_payment(self, netexport, investment):
