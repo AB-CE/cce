@@ -49,7 +49,7 @@ def to_iotable(name, rounds=None):
         q.append(quantities)
         print '***\trelative\t***'
         print
-    pd.set_option('display.float_format', lambda x: '%.2f' % x)
+    pd.set_option('display.float_format', lambda x: '%.1f' % (x * 100))
     print 'p'
     print p[1] / p[0] - 1
     print 'q'
