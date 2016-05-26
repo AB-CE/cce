@@ -101,6 +101,7 @@ class Firm(abce.Agent, abce.Firm):
         betas = production_function[1]
         sam = simulation_parameters['sam']
         self.value_of_international_sales = sam.endowment_vector('nx')[self.group]
+        self.value_of_investment = sam.endowment_vector('inv')[self.group]
         self.tax_change_time = simulation_parameters['tax_change_time']
         self.carbon_prod = simulation_parameters['carbon_prod'][self.group] / (sam.column_sum[self.group] - sam.entries[self.group]['nx'])
         self.carbon_tax_after = simulation_parameters['carbon_tax'] * 12 / 44
@@ -137,6 +138,13 @@ class Firm(abce.Agent, abce.Firm):
         else:
             value = min(- self.value_of_international_sales, self.possession('money') / self.price)
             self.buy('netexport', 0, good=self.group, quantity=value, price=self.price)
+
+    def invest(self):
+        if self.value_of_investment > 0:
+            value = min(self.value_of_investment, self.possession(self.group))
+            sale = self.sell('inv', 0, good=self.group, quantity=value, price=self.price)
+            self.sales.append(sale)
+
 
     def send_demand(self):
         """ send nominal demand, according to weights to neighbor """

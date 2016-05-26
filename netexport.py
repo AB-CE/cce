@@ -6,17 +6,15 @@ class NetExport(abce.Agent):
         self.create('money', 1000000)
 
     def international_trade(self):
-        money_before = self.possession('money')
         for group in self.get_offers_all().values():
             for offer in group:
                 if offer.buysell == 98:
                     self.create(offer.good, offer.quantity)
                 self.accept(offer)
-        trade_surplus = self.possession('money') - money_before
+        trade_surplus = self.possession('money') - 1000000
         self.log('', {'trade_surplus': trade_surplus})
         self.take('household', 0, good='money', quantity=max(0, - trade_surplus))
         self.give('household', 0, good='money', quantity=max(0, trade_surplus))
-        self.message('household', 0, 'nx', trade_surplus)
         self.log('money', self.possession('money'))
 
 

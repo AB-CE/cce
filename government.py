@@ -20,4 +20,3 @@ class Government(abce.Agent):
         share  = self.money / self.num_households
         for i in range(self.num_households):
             self.give('household', i, good='money', quantity=share)
-            self.message('household', i, 'tax_return', share)

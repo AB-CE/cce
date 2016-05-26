@@ -9,7 +9,6 @@ class Household(abce.Agent, abce.Household):
     def init(self, simulation_parameters, _):
         self.num_firms = num_firms = simulation_parameters['num_firms']
         self.wage_stickiness = simulation_parameters['wage_stickiness']
-        self.investment_share = simulation_parameters['investment_share']
         money = simulation_parameters['money'] / 2
 
         self.create('money', money )
@@ -26,7 +25,7 @@ class Household(abce.Agent, abce.Household):
     def send_demand(self):
         for final_good in self.final_goods:
             for i in range(self.num_firms):
-                demand = self.alpha[final_good] / self.num_firms * (self.possession("money") * (1 - self.investment_share))
+                demand = self.alpha[final_good] / self.num_firms * self.possession("money")
                 if demand > 0:
                     self.message(final_good, i, final_good, demand)
 
@@ -64,18 +63,13 @@ class Household(abce.Agent, abce.Household):
             for offer in self.get_offers(final_good):
                 self.accept(offer)
 
-    def investing(self):
+    def sales_accounting(self):
         self.sales_earning = sum([sell.final_quantity * sell.price for sell in self.sells])
         self.sells = []
-        tax_return = self.get_messages('tax_return')[0].content
-        nx_balance = self.get_messages('nx')[0].content
-        quantity = self.investment_share * (self.sales_earning + tax_return + nx_balance)
-        self.give('inv', 0, good='money', quantity=quantity)
-        self.investment = quantity
 
     def consuming(self):
         self.utility = self.consume_everything()
 
     def balance_balance_of_payment(self):
-        offer = self.get_offers('money')[0]
-        self.accept(offer)
+        for offer in self.get_offers('money'):
+            self.accept(offer, min(self.possession('money'), offer.quantity))

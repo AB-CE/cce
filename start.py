@@ -62,21 +62,23 @@ def main():
 
     simulation = Simulation(rounds=simulation_parameters['num_rounds'], trade_logging='group', processes=1)
     action_list = [(firms, 'taxes_intervention'),
-                   (firms_and_household + ['inv'], 'send_demand'),
-                   (firms_and_household + ['inv'], 'selling'),
-                   (firms_and_household + ['inv'], 'buying'),
+                   (firms_and_household, 'send_demand'),
+                   (firms_and_household, 'selling'),
+                   (firms_and_household, 'buying'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
                    (firms, 'production'),
                    (firms, 'international_trade'),
+                   (firms, 'invest'),
                    ('netexport', 'international_trade'),
+                   ('inv', 'investment'),
                    ('household', 'balance_balance_of_payment'),
-                   (('household'), 'investing'),
+                   (('household'), 'sales_accounting'),
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms, 'stats'),
                    (firms_and_household, 'aggregate'),
-                   (('household', 'inv'), 'consuming'),
+                   (('household'), 'consuming'),
                    ('government', 'aggregate')]
 
     simulation.add_action_list(action_list)
@@ -88,7 +90,7 @@ def main():
 
     simulation.aggregate('household',
                          possessions=['money', 'labor'],
-                         variables=['investment', 'sales_earning', 'rationing'])
+                         variables=['sales_earning', 'rationing'])
     """ collect data """
 
     simulation.aggregate('government',
