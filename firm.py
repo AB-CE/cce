@@ -177,7 +177,7 @@ class Firm(abce.Agent, abce.Firm):
         total_sales_quantity = sum([sale.final_quantity for sale in self.sales])
         total_sales = sum([sale.final_quantity * sale.price for sale in self.sales])
         tax = total_sales * self.output_tax_share
-        carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax / (1 + self.carbon_prod * self.carbon_tax)
+        carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax
         #self.log('carbon', {'tax', carbon_tax})
         self.give('government', 0, good='money', quantity=min(self.possession('money'), tax + carbon_tax))
         self.sales = []
