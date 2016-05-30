@@ -1,6 +1,6 @@
 from __future__ import division
 import abce
-from abce.tools import NotEnoughGoods, epsilon
+from abce import NotEnoughGoods, epsilon
 from pprint import pprint
 from sys import float_info
 from collections import defaultdict
@@ -56,7 +56,6 @@ class Household(abce.Agent, abce.Household):
                                  quantity=msg.content / price * rationing,
                                  price=price)
                 self.sells.append(sell)
-
 
     def buying(self):
         for final_good in self.final_goods:

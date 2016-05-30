@@ -65,9 +65,9 @@ def main():
                    (firms_and_household, 'send_demand'),
                    (firms_and_household, 'selling'),
                    (firms_and_household, 'buying'),
+                   (firms, 'production'),
                    (firms, 'taxes'),
                    ('government', 'taxes_to_household'),
-                   (firms, 'production'),
                    (firms, 'international_trade'),
                    (firms, 'invest'),
                    ('netexport', 'international_trade'),
@@ -114,7 +114,7 @@ def main():
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
     iotable.to_iotable(simulation.path, [99,199])
-    simulation.graphs()
+    #simulation.graphs()
 
 if __name__ == '__main__':
     main()

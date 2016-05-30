@@ -43,12 +43,13 @@ class Sam():
     def utility_function(self):
         """ the utility functions exponents as values in a dict """
         entries, column_sum = self.entries, self.column_sum
+        output_tax_shares = self.output_tax_shares()
+
         utility_functions = {}
         for consumer in self.consumers:
             alphas = {}
-            Z = sum([entries[input][consumer] for input in self.consumption])
             for input in self.consumption:
-                alphas[input] = entries[input][consumer] / Z
+                alphas[input] = entries[input][consumer] / column_sum[consumer]
             utility_functions[consumer] = alphas
 
         return utility_functions
@@ -65,12 +66,15 @@ class Sam():
         production_functions = {}
 
         for firm in self.outputs:
-            Z = sum([(1 + output_tax_shares[firm]) * entries[input][firm] for input in self.inputs])
 
-            for input in self.inputs:
-                betas[firm][input] = (1 + output_tax_shares[firm]) * entries[input][firm] / Z
+            for input in self.outputs:
+                betas[firm][input] = entries[input][firm] / column_sum[firm]
 
-            b[firm] = (column_sum[firm]
+            for input in ['cap', 'lab']:
+                betas[firm][input] = entries[input][firm] / column_sum[firm]
+
+
+            b[firm] = (1 / (1 + output_tax_shares[input]) * column_sum[firm]
                        / np.prod([entries[input][firm] ** betas[firm][input]
                                   for input in self.inputs]))
 
@@ -86,6 +90,7 @@ class Sam():
             output_tax_shares[firm] = (entries[output_tax][firm]
                                        / (sum([entries[input][firm]
                                               for input in self.inputs]) + entries[output_tax][firm]))
+        output_tax_shares['cap'] = output_tax_shares['lab'] = 0
         return output_tax_shares
 
     def endowment(self, name):
@@ -98,14 +103,14 @@ class Sam():
         return {row_name: self.entries[row_name][column] for row_name in self.entries}
 
     def investment_share(self, von, zu):
-        """ returns  """
+        """ returns """
         return self.column_sum[zu] / sum(self.entries[von].values())
 
     def initial_investment(self, zu):
         return self.column_sum[zu]
 
     def money(self):
-        return 3225
+        return 2960
         #return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax] - 2 * 26.476
 
     def balance_of_payment(self, netexport, investment):
