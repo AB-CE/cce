@@ -18,7 +18,7 @@ def main():
               outputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
               output_tax='tax',
               consumption=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
-              consumers=['hoh', 'inv'])
+              consumers=['hoh'])
     """ reads the social accounting matrix and returns coefficients of a cobb-douglas model """
     carbon_prod = defaultdict(float)
     carbon_prod.update({'col': 2112 * 1e-4,
