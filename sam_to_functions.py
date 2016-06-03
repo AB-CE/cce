@@ -70,8 +70,6 @@ class Sam():
             for input in self.inputs:
                 Z = sum([(1 + output_tax_shares[i]) *  entries[i][firm] for i in self.inputs])
                 betas[firm][input] = (1 + output_tax_shares[input]) * entries[input][firm] / Z
-                print Z - column_sum[firm]
-
 
             b[firm] = (column_sum[firm]
                        / np.prod([entries[input][firm] ** betas[firm][input]
@@ -109,7 +107,7 @@ class Sam():
         return self.column_sum[zu]
 
     def money(self):
-        return 2800
+        return 2803
         #return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax] - 2 * 26.476
 
     def balance_of_payment(self, netexport, investment):

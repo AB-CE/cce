@@ -125,6 +125,7 @@ class Firm(abce.Agent, abce.Firm):
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
         self.sales = []
+        self.nx = 0
 
     def taxes_intervention(self):
         if self.round == self.tax_change_time:
@@ -134,16 +135,17 @@ class Firm(abce.Agent, abce.Firm):
         if self.value_of_international_sales > 0:
             value = min(self.value_of_international_sales, self.possession(self.group))
             sale = self.sell('netexport', 0, good=self.group, quantity=value, price=self.price)
-            #self.sales.append(sale)
+            self.sales.append(sale)
         else:
             value = min(- self.value_of_international_sales, self.possession('money') / self.price)
             self.buy('netexport', 0, good=self.group, quantity=value, price=self.price)
+            self.nx = value
 
     def invest(self):
         if self.value_of_investment > 0:
             value = min(self.value_of_investment, self.possession(self.group))
             sale = self.sell('inv', 0, good=self.group, quantity=value, price=self.price)
-            #self.sales.append(sale)
+            self.sales.append(sale)
 
 
     def send_demand(self):
@@ -163,7 +165,7 @@ class Firm(abce.Agent, abce.Firm):
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
         if self.possession(self.group) > 0:
-            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) + (self.carbon_tax * self.carbon_prod)) / (1 + self.output_tax_share )
+            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) + (self.carbon_tax * self.carbon_prod)) / (1 + self.output_tax_share)
             self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
             demand = sum([msg.content / self.price for msg in messages])
             if demand < self.possession(self.group):
@@ -182,9 +184,8 @@ class Firm(abce.Agent, abce.Firm):
                 self.sales.append(sale)
 
     def taxes(self):
-        total_sales_quantity = sum([sale.final_quantity for sale in self.sales])
-        total_sales = sum([sale.final_quantity * sale.price for sale in self.sales])
-        tax = self.produced * self.price * self.output_tax_share
+        total_sales_quantity = sum([sale.final_quantity for sale in self.sales]) - self.nx
+        tax = total_sales_quantity * self.price * self.output_tax_share
         carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax
         #self.log('carbon', {'tax', carbon_tax})
         self.give('government', 0, good='money', quantity=min(self.possession('money'), tax + carbon_tax))
