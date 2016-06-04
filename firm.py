@@ -165,7 +165,7 @@ class Firm(abce.Agent, abce.Firm):
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
         if self.possession(self.group) > 0:
-            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) + (self.carbon_tax * self.carbon_prod)) / (1 + self.output_tax_share)
+            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) ) / (1 + self.output_tax_share)
             self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
             demand = sum([msg.content / self.price for msg in messages])
             if demand < self.possession(self.group):
@@ -185,8 +185,9 @@ class Firm(abce.Agent, abce.Firm):
 
     def taxes(self):
         total_sales_quantity = sum([sale.final_quantity for sale in self.sales]) - self.nx
-        tax = total_sales_quantity * self.price * self.output_tax_share
-        carbon_tax = total_sales_quantity * self.carbon_prod * self.carbon_tax
+        carbon_tax = self.produced * self.carbon_prod * self.carbon_tax
+        tax = (total_sales_quantity * self.price  - carbon_tax) * self.output_tax_share
+
         #self.log('carbon', {'tax', carbon_tax})
         self.give('government', 0, good='money', quantity=min(self.possession('money'), tax + carbon_tax))
         self.sales = []
