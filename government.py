@@ -1,7 +1,7 @@
 #pylint: disable=W0201
 from __future__ import division
 import abce
-from abce.tools import NotEnoughGoods, epsilon
+from abce import NotEnoughGoods, epsilon
 import random
 import numpy as np
 from optimization_functions import optimization
