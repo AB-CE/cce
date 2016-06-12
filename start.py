@@ -10,9 +10,11 @@ import os
 from sam_to_functions import Sam
 from pprint import pprint
 import iotable
+from scipy.optimize import minimize
 
 
-def main():
+
+def main(money):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
               outputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
@@ -49,7 +51,7 @@ def main():
                              'output_tax_shares': sam.output_tax_shares(),
                              'investment_share': sam.investment_share('hoh', 'inv'),
                              'initial_investment': sam.initial_investment('inv'),
-                             'money': sam.money(),
+                             'money': money,
                              'inputs': sam.inputs,
                              'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
                              'sam': sam,
@@ -114,7 +116,19 @@ def main():
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
     iotable.to_iotable(simulation.path, [99,199])
+    mean_price = iotable.average_price(simulation.path, 99)
+    print 'mean price', mean_price
     #simulation.graphs()
+    return mean_price
+
+def F(money):
+    prices = main(float(money))
+    print("****")
+    print 'money', money
+    print 'price lvl', prices
+    print("****")
+    return ((1.0 - prices) ** 2) * 1000000000000
 
 if __name__ == '__main__':
-    main()
+    opt =  minimize(F, [2937.07587925], bounds=[(0, None)], method='COBYLA', options={'disp': True}, tol=0.000000000001)
+    print opt

@@ -57,8 +57,18 @@ def to_iotable(name, rounds=None):
     return value
 
 
-
-
+def average_price(name, round=99):
+    pd.set_option('display.float_format', lambda x: '%.25f' % x)
+    df = pd.read_csv(name + '/trade.csv')
+    table = df[df['round'] == round]
+    table.drop(['round', 'index'], axis=1, inplace=True)
+    grouped_table = table.groupby(['seller', 'buyer'])
+    prices = grouped_table.mean()['price']
+    prices = prices.unstack()
+    prices = prices.replace(0, np.NaN)
+    mean = prices.mean()
+    mean = mean.mean()
+    return mean
 
 
 
