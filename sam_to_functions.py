@@ -37,6 +37,7 @@ class Sam():
         column_sum = {}
         for col in fields:
             column_sum[col] = sum(item[col] for item in entries.values())
+
         self.entries, self.column_sum = dict(entries), column_sum
 
     def utility_function(self):
@@ -48,9 +49,7 @@ class Sam():
         for consumer in self.consumers:
             alphas = {}
             for input in self.consumption:
-                Z = sum([(1 + output_tax_shares[i]) * entries[i][consumer] for i in self.consumption ])
-                alphas[input] = (1 + output_tax_shares[input]) * entries[input][consumer] / Z
-            print alphas, sum(alphas.values())
+                alphas[input] = entries[input][consumer] / column_sum[consumer]
             utility_functions[consumer] = alphas
 
         return utility_functions
@@ -67,9 +66,13 @@ class Sam():
         production_functions = {}
 
         for firm in self.outputs:
-            for input in self.inputs:
-                Z = sum([(1 + output_tax_shares[i]) *  entries[i][firm] for i in self.inputs])
-                betas[firm][input] = (1 + output_tax_shares[input]) * entries[input][firm] / Z
+
+            for input in self.outputs:
+                betas[firm][input] = entries[input][firm] / ((1 - output_tax_shares[firm]) * column_sum[firm])
+
+            for input in ['cap', 'lab']:
+                betas[firm][input] = entries[input][firm] / ((1 - output_tax_shares[firm]) * column_sum[firm])
+
 
             b[firm] = (column_sum[firm]
                        / np.prod([entries[input][firm] ** betas[firm][input]
@@ -107,7 +110,7 @@ class Sam():
         return self.column_sum[zu]
 
     def money(self):
-        return 2803.00001596
+        return 2960
         #return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax] - 2 * 26.476
 
     def balance_of_payment(self, netexport, investment):

@@ -165,7 +165,7 @@ class Firm(abce.Agent, abce.Firm):
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
         if self.possession(self.group) > 0:
-            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) ) / (1 + self.output_tax_share)
+            market_clearing_price = (sum(nominal_demand) / self.possession(self.group) )
             self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
             demand = sum([msg.content / self.price for msg in messages])
             if demand < self.possession(self.group):
