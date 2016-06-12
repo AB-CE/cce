@@ -2,11 +2,11 @@ import pandas as pd
 import numpy as np
 
 
-pd.set_option('expand_frame_repr', False)
-pd.set_option('precision', 3)
-pd.set_option('display.float_format', lambda x: '%.3f' % x)
 
 def to_iotable(name, rounds=None):
+    pd.set_option('expand_frame_repr', False)
+    pd.set_option('precision', 3)
+    pd.set_option('display.float_format', lambda x: '%.3f' % x)
     df = pd.read_csv(name + '/trade.csv')
     if rounds is None:
         rounds = [max(df['round'])]
