@@ -169,7 +169,7 @@ class Firm(abce.Agent, abce.Firm):
             self.price = (1 - self.price_stickiness) * market_clearing_price + self.price_stickiness * self.price
             demand = sum([msg.content / self.price for msg in messages])
             if demand < self.possession(self.group):
-                self.rationing = rationing = 1 - float_info.epsilon * self.num_firms * 10
+                self.rationing = rationing = 1
             else:
                 self.rationing = rationing = max(0, self.possession(self.group) / demand - float_info.epsilon * self.num_firms * 10)
 

@@ -46,7 +46,7 @@ class Household(abce.Agent, abce.Household):
                 self.price = price = market_clearing_price
             demand = sum([msg.content / price for msg in ct_messages])
             if demand < self.possession(capital_type):
-                self.rationing = rationing = 1 - float_info.epsilon * self.num_firms * 10
+                self.rationing = rationing = 1
             else:
                 self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms * 10
             for msg in ct_messages:
