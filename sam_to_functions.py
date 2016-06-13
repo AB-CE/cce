@@ -110,8 +110,7 @@ class Sam():
         return self.column_sum[zu]
 
     def money(self):
-        return 2960
-        #return sum([col_sum for col_sum in self.column_sum.values()])  - self.column_sum['hoh'] - self.column_sum[self.output_tax] - 2 * 26.476
+        return sum([self.column_sum[input] for input in self.inputs])
 
     def balance_of_payment(self, netexport, investment):
         return self.entries[investment][netexport]
