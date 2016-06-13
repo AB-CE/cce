@@ -9,7 +9,6 @@ from copy import copy
 from collections import OrderedDict
 from pprint import pprint
 import itertools
-from sys import float_info
 
 def normalized_random(length):
     random_values = [random.uniform(0.1, 0.9) for _ in range(length)]
@@ -97,7 +96,7 @@ class Firm(abce.Agent, abce.Firm):
         self.capital_types = simulation_parameters['capital_types']
         self.output_tax_share = simulation_parameters['output_tax_shares'][self.group]
         production_function = simulation_parameters['production_functions'][self.group]
-        money = simulation_parameters['money'] / 2 / (self.num_firms * len(simulation_parameters['inputs']))
+        money = simulation_parameters['money'] / 2 / (self.num_firms * len(simulation_parameters['outputs']))
         betas = production_function[1]
         sam = simulation_parameters['sam']
         self.value_of_international_sales = sam.endowment_vector('nx')[self.group]
@@ -113,11 +112,11 @@ class Firm(abce.Agent, abce.Firm):
         self.seed_weights = normalized_random(self.goods_details.num_goods())
         self.goods_details.set_weights_from_full_list(normalized_random(len(self.goods_details)))
 
-        self.create(self.group, money * 10)   # initial endowment of own good and price must be consistent (=the same)
+        self.create(self.group, sam.column_sum[self.group])   # initial endowment of own good and price must be consistent (=the same)
         self.create('money', money)
         self.money_1 = self.possession('money')
 
-        self.price = money * 10
+        self.price = 1
         self.profit = 0
 
         self.b = production_function[0]
@@ -171,7 +170,7 @@ class Firm(abce.Agent, abce.Firm):
             if demand < self.possession(self.group):
                 self.rationing = rationing = 1
             else:
-                self.rationing = rationing = max(0, self.possession(self.group) / demand - float_info.epsilon * self.num_firms * 10)
+                self.rationing = rationing = max(0, self.possession(self.group) / demand)
 
             for msg in messages:
                 quantity = msg.content / self.price * rationing

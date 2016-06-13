@@ -48,7 +48,7 @@ class Household(abce.Agent, abce.Household):
             if demand < self.possession(capital_type):
                 self.rationing = rationing = 1
             else:
-                self.rationing = rationing = self.possession(capital_type) / demand - float_info.epsilon * self.num_firms * 10
+                self.rationing = rationing = self.possession(capital_type) / demand
             for msg in ct_messages:
                 sell = self.sell(receiver_group=msg.sender_group,
                                  receiver_id=msg.sender_id,

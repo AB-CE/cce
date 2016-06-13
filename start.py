@@ -53,6 +53,7 @@ def main(money):
                              'initial_investment': sam.initial_investment('inv'),
                              'money': money,
                              'inputs': sam.inputs,
+                             'outputs': sam.outputs,
                              'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
                              'sam': sam,
                              'carbon_prod': carbon_prod,
