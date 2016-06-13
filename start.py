@@ -10,7 +10,7 @@ import os
 from sam_to_functions import Sam
 from pprint import pprint
 import iotable
-from scipy.optimize import minimize
+from scipy import optimize
 
 
 
@@ -49,8 +49,6 @@ def main(money):
                              'production_functions': sam.production_functions(),
                              'consumption_functions': sam.utility_function(),
                              'output_tax_shares': sam.output_tax_shares(),
-                             'investment_share': sam.investment_share('hoh', 'inv'),
-                             'initial_investment': sam.initial_investment('inv'),
                              'money': money,
                              'inputs': sam.inputs,
                              'outputs': sam.outputs,
@@ -116,7 +114,7 @@ def main(money):
     except Exception as e:
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
-    iotable.to_iotable(simulation.path, [99,199])
+    iotable.to_iotable(simulation.path, [99, 199])
     mean_price = iotable.average_price(simulation.path, 99)
     print 'mean price', mean_price
     #simulation.graphs()
@@ -131,5 +129,6 @@ def F(money):
     return ((1.0 - prices) ** 2) * 1000000000000
 
 if __name__ == '__main__':
-    opt =  minimize(F, [2937.07587925], bounds=[(0, None)], method='COBYLA', options={'disp': True}, tol=0.000000000001)
+    #main(2667)
+    opt =  optimize.minimize_scalar(F, bracket=(2500, 2800), bounds=(2500, 2800), method='brent', options={'disp': True}, tol=0.000000000001)
     print opt
