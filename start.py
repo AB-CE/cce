@@ -67,7 +67,8 @@ def main(money):
                    (firms_and_household, 'selling'),
                    (firms_and_household, 'buying'),
                    (firms, 'production'),
-                   (firms, 'taxes'),
+                   (firms, 'carbon_taxes'),
+                   (firms, 'sales_tax'),
                    ('government', 'taxes_to_household'),
                    (firms, 'international_trade'),
                    (firms, 'invest'),
@@ -129,6 +130,6 @@ def F(money):
     return ((1.0 - prices) ** 2) * 1000000000000
 
 if __name__ == '__main__':
-    #main(2667)
+    #main(2691.28480167)
     opt =  optimize.minimize_scalar(F, bracket=(2500, 2800), bounds=(2500, 2800), method='brent', options={'disp': True}, tol=0.000000000001)
     print opt

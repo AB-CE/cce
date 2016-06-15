@@ -99,6 +99,7 @@ class Firm(abce.Agent, abce.Firm):
         money = simulation_parameters['money'] / 2 / (self.num_firms * len(simulation_parameters['outputs']))
         betas = production_function[1]
         sam = simulation_parameters['sam']
+        self.sbtax = sam.entries['tax'][self.group]
         self.value_of_international_sales = sam.endowment_vector('nx')[self.group]
         self.value_of_investment = sam.endowment_vector('inv')[self.group]
         self.tax_change_time = simulation_parameters['tax_change_time']
@@ -182,14 +183,15 @@ class Firm(abce.Agent, abce.Firm):
                 sale = self.sell(msg.sender_group, receiver_id=msg.sender_id, good=self.group, quantity=0, price=self.price)
                 self.sales.append(sale)
 
-    def taxes(self):
+    def sales_tax(self):
         total_sales_quantity = sum([sale.final_quantity for sale in self.sales]) - self.nx
-        carbon_tax = self.produced * self.carbon_prod * self.carbon_tax
-        tax = (total_sales_quantity * self.price  - carbon_tax) * self.output_tax_share
-
-        #self.log('carbon', {'tax', carbon_tax})
-        self.give('government', 0, good='money', quantity=min(self.possession('money'), tax + carbon_tax))
+        tax = (total_sales_quantity * self.price) * self.output_tax_share
+        self.give('government', 0, good='money', quantity=min(self.possession('money'), tax))
         self.sales = []
+
+    def carbon_taxes(self):
+        carbon_tax = self.produced * self.carbon_prod * self.carbon_tax  / (1 + self.output_tax_share)
+        self.give('government', 0, good='money', quantity=min(self.possession('money'),carbon_tax))
 
     def buying(self):
         """ get offers from each neighbor, accept it and update
