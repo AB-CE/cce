@@ -62,6 +62,9 @@ class Household(abce.Agent, abce.Household):
             for offer in self.get_offers(final_good):
                 self.accept(offer)
 
+    def money_to_nx(self):
+        self.give('netexport', 0, quantity=self.possession('money'), good='money')
+
     def sales_accounting(self):
         self.sales_earning = sum([sell.final_quantity * sell.price for sell in self.sells])
         self.sells = []
@@ -69,6 +72,3 @@ class Household(abce.Agent, abce.Household):
     def consuming(self):
         self.utility = self.consume_everything()
 
-    def balance_balance_of_payment(self):
-        for offer in self.get_offers('money'):
-            self.accept(offer, min(self.possession('money'), offer.quantity))

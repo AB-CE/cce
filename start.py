@@ -1,9 +1,8 @@
 from __future__ import division
 from firm import Firm
 from household import Household
-from investment import Investment
-from government import Government
 from netexport import NetExport
+from government import Government
 from abce import Simulation
 from collections import OrderedDict, defaultdict
 import os
@@ -41,8 +40,8 @@ def main(money):
                              'endowment_FFlab': sam.endowment('lab'),
                              'final_goods': sam.consumption,
                              'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.0,
-                             'price_stickiness': 0.0,
+                             'wage_stickiness': 0.5,
+                             'price_stickiness': 0.5,
                              'network_weight_stickiness': 0.0,
                              'import_price_stickiness': 0.0,
                              'dividends_percent': 0.0,
@@ -66,15 +65,14 @@ def main(money):
                    (firms_and_household, 'send_demand'),
                    (firms_and_household, 'selling'),
                    (firms_and_household, 'buying'),
+                   ('household', 'money_to_nx'),
                    (firms, 'production'),
                    (firms, 'carbon_taxes'),
                    (firms, 'sales_tax'),
                    ('government', 'taxes_to_household'),
                    (firms, 'international_trade'),
                    (firms, 'invest'),
-                   ('netexport', 'international_trade'),
-                   ('inv', 'investment'),
-                   ('household', 'balance_balance_of_payment'),
+                   ('netexport', 'invest'),
                    (('household'), 'sales_accounting'),
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
@@ -107,9 +105,8 @@ def main(money):
     for good in firms:
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
     simulation.build_agents(Household, 'household', simulation_parameters['num_household'], parameters=simulation_parameters)
-    simulation.build_agents(Investment, 'inv', 1, parameters=simulation_parameters)
-    simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
     simulation.build_agents(NetExport, 'netexport', 1, parameters=simulation_parameters)
+    simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
     try:
         simulation.run()
     except Exception as e:
@@ -127,7 +124,7 @@ def F(money):
     print 'money', money
     print 'price lvl', prices
     print("****")
-    return ((1.0 - prices) ** 2) * 1000000000000
+    return ((1.0 - prices) ** 2) * 100000
 
 if __name__ == '__main__':
     #main(2691.28480167)

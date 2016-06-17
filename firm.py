@@ -144,7 +144,7 @@ class Firm(abce.Agent, abce.Firm):
     def invest(self):
         if self.value_of_investment > 0:
             value = min(self.value_of_investment, self.possession(self.group))
-            sale = self.sell('inv', 0, good=self.group, quantity=value, price=self.price)
+            sale = self.sell('netexport', 0, good=self.group, quantity=value, price=self.price)
             self.sales.append(sale)
 
 

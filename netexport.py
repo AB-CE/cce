@@ -3,25 +3,26 @@ from abce import NotEnoughGoods, epsilon
 
 class NetExport(abce.Agent):
     def init(self, _, __):
-        self.create('money', 1000000)
+        self.create('money', 0)
 
-    def international_trade(self):
-        net_income = 0
-        for group in self.get_offers_all().values():
-            for offer in group:
-                if offer.buysell == 98:
-                    self.create(offer.good, offer.quantity)
-                    net_income += offer.quantity * offer.price
-                else:
-                    net_income -= offer.quantity * offer.price
+    def invest(self):
+        offers_grouped = self.get_offers_all().values()
+        offers = []
+        for os in offers_grouped:
+            offers.extend(os)
+        demand = sum([offer.quantity * offer.price for offer in offers if offer.buysell != 98])
+        if demand < self.possession('money'):
+            self.rationing = rationing = 1
+        else:
+            self.rationing = rationing = self.possession('money') / demand
 
+        for offer in offers:
+            if offer.buysell == 98:
+                self.create(offer.good, offer.quantity)
                 self.accept(offer)
-        target = 1000000 - net_income
-        trade_surplus = self.possession('money') - target
-        self.log('', {'trade_surplus': trade_surplus})
-        self.take('household', 0, good='money', quantity=max(0, - trade_surplus))
-        self.give('household', 0, good='money', quantity=max(0, trade_surplus))
-        self.log('money', self.possession('money'))
+            else:
+                self.accept(offer, offer.quantity * rationing)
 
+        self.give('household', 0, quantity=self.possession('money'), good='money')
 
 
