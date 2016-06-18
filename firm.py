@@ -190,7 +190,7 @@ class Firm(abce.Agent, abce.Firm):
         self.sales = []
 
     def carbon_taxes(self):
-        carbon_tax = self.produced * self.carbon_prod * self.carbon_tax  / (1 + self.output_tax_share)
+        carbon_tax = self.produced * self.carbon_prod * self.carbon_tax  * (1 - self.output_tax_share)
         self.give('government', 0, good='money', quantity=min(self.possession('money'),carbon_tax))
 
     def buying(self):
