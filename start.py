@@ -112,7 +112,7 @@ def main(money):
     except Exception as e:
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
-    iotable.to_iotable(simulation.path, [99, 199])
+    iotable.to_iotable(simulation.path, [99, simulation_parameters['num_rounds'] - 1])
     mean_price = iotable.average_price(simulation.path, 99)
     print 'mean price', mean_price
     #simulation.graphs()
@@ -127,6 +127,6 @@ def F(money):
     return ((1.0 - prices) ** 2) * 100000
 
 if __name__ == '__main__':
-    #main(2691.28480167)
-    opt =  optimize.minimize_scalar(F, bracket=(2500, 2800), bounds=(2500, 2800), method='brent', options={'disp': True}, tol=0.000000000001)
-    print opt
+    main(2691.2641884030372)
+    #opt =  optimize.minimize_scalar(F, bracket=(2685, 2750), bounds=(2685, 2750), method='brent', options={'xtol': 0.000000000001})
+    #print opt
