@@ -10,6 +10,7 @@ from sam_to_functions import Sam
 from pprint import pprint
 import iotable
 from scipy import optimize
+from abce.abcegui import app
 
 title = "Computational Complete Economy Model on Climate Gas Reduction"
 text = """ This simulation simulates climate change
@@ -23,7 +24,7 @@ simulation_parameters = OrderedDict({'wage_stickiness': (0, 0.5, 1.0),
                                      'rounds': 200})
 
 simulation_parameters['trade_logging'] = 'group'
-@gui(simulation_parameters, text=text)
+@gui(simulation_parameters, text=text, title=title)
 def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
