@@ -70,5 +70,5 @@ class Household(abce.Agent, abce.Household):
         self.sells = []
 
     def consuming(self):
-        self.utility = self.consume_everything()
+        self.welfare = self.consume_everything()
 

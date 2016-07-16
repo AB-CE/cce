@@ -241,8 +241,4 @@ class Firm(abce.Agent, abce.Firm):
 
     def stats(self):
         """ helper for statistics """
-        if self.possession('money') > epsilon:
-            self.dead = 0
-        else:
-            self.dead = 1
-        self.inventory = self.possession(self.group)
+        self.co2 = self.produced * self.carbon_prod

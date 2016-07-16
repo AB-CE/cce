@@ -3,7 +3,7 @@ from firm import Firm
 from household import Household
 from netexport import NetExport
 from government import Government
-from abce import Simulation
+from abce import Simulation, gui
 from collections import OrderedDict, defaultdict
 import os
 from sam_to_functions import Sam
@@ -11,9 +11,20 @@ from pprint import pprint
 import iotable
 from scipy import optimize
 
+title = "Computational Complete Economy Model on Climate Gas Reduction"
+text = """ This simulation simulates climate change
+"""
 
+simulation_parameters = OrderedDict({'wage_stickiness': (0, 0.5, 1.0),
+                                     'price_stickiness': (0, 0.5, 1.0),
+                                     'network_weight_stickiness': (0, 0.5, 1.0),
+                                     'carbon_tax': (0, 50.0, 80.0),
+                                     'tax_change_time': 100,
+                                     'rounds': 200})
 
-def main(money):
+simulation_parameters['trade_logging'] = 'group'
+@gui(simulation_parameters, text=text)
+def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
               outputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe'],
@@ -30,37 +41,30 @@ def main(money):
     print carbon_prod
 
 
-    simulation_parameters = {'name': 'cce',
-                             'random_seed': None,
-                             'num_rounds': 200,
-                             'tax_change_time': 100,
-                             'num_household': 1,
-                             'num_firms': 1,
-                             'endowment_FFcap': sam.endowment('cap'),
-                             'endowment_FFlab': sam.endowment('lab'),
-                             'final_goods': sam.consumption,
-                             'capital_types': ['cap', 'lab'],
-                             'wage_stickiness': 0.5,
-                             'price_stickiness': 0.5,
-                             'network_weight_stickiness': 0.0,
-                             'import_price_stickiness': 0.0,
-                             'dividends_percent': 0.0,
-                             'production_functions': sam.production_functions(),
-                             'consumption_functions': sam.utility_function(),
-                             'output_tax_shares': sam.output_tax_shares(),
-                             'money': money,
-                             'inputs': sam.inputs,
-                             'outputs': sam.outputs,
-                             'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
-                             'sam': sam,
-                             'carbon_prod': carbon_prod,
-                             'carbon_tax': 50}
+    simulation_parameters.update({'name': 'cce',
+                                  'random_seed': None,
+                                  'num_household': 1,
+                                  'num_firms': 1,
+                                  'endowment_FFcap': sam.endowment('cap'),
+                                  'endowment_FFlab': sam.endowment('lab'),
+                                  'final_goods': sam.consumption,
+                                  'capital_types': ['cap', 'lab'],
+                                  'dividends_percent': 0.0,
+                                  'production_functions': sam.production_functions(),
+                                  'consumption_functions': sam.utility_function(),
+                                  'output_tax_shares': sam.output_tax_shares(),
+                                  'money': 2691.2641884030372,
+                                  'inputs': sam.inputs,
+                                  'outputs': sam.outputs,
+                                  'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
+                                  'sam': sam,
+                                  'carbon_prod': carbon_prod})
 
 
     firms = sam.outputs
     firms_and_household = firms + ['household']
 
-    simulation = Simulation(rounds=simulation_parameters['num_rounds'], trade_logging='group', processes=1)
+    simulation = Simulation(rounds=simulation_parameters['rounds'], trade_logging='group', processes=1)
     action_list = [(firms, 'taxes_intervention'),
                    (firms_and_household, 'send_demand'),
                    (firms_and_household, 'selling'),
@@ -77,9 +81,8 @@ def main(money):
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms, 'stats'),
-                   (firms_and_household, 'aggregate'),
-                   (('household'), 'consuming'),
-                   ('government', 'aggregate')]
+                   (['col', 'oil', 'gas', 'household'], 'aggregate'),
+                   (('household'), 'consuming')]
 
     simulation.add_action_list(action_list)
 
@@ -89,18 +92,14 @@ def main(money):
     similar for cap"""
 
     simulation.aggregate('household',
-                         possessions=['money', 'labor'],
-                         variables=['sales_earning', 'rationing'])
+                         possessions=[],
+                         variables=['welfare'])
     """ collect data """
 
-    simulation.aggregate('government',
-                         variables=['money'])
-
-    for good in firms:
+    for good in ['col', 'oil', 'gas']:
         simulation.aggregate(good,
-                             possessions=['money'],
-                             variables=['price', 'nominal_demand', 'produced', 'profit', 'dead',
-                                        'inventory', 'rationing'])
+                             possessions=[],
+                             variables=['price', 'produced', 'co2'])
 
     for good in firms:
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
@@ -112,7 +111,7 @@ def main(money):
     except Exception as e:
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
-    iotable.to_iotable(simulation.path, [99, simulation_parameters['num_rounds'] - 1])
+    iotable.to_iotable(simulation.path, [99, simulation_parameters['rounds'] - 1])
     mean_price = iotable.average_price(simulation.path, 99)
     print 'mean price', mean_price
     #simulation.graphs()
@@ -127,6 +126,6 @@ def F(money):
     return ((1.0 - prices) ** 2) * 100000
 
 if __name__ == '__main__':
-    main(2691.2641884030372)
+    main()
     #opt =  optimize.minimize_scalar(F, bracket=(2685, 2750), bounds=(2685, 2750), method='brent', options={'xtol': 0.000000000001})
     #print opt
