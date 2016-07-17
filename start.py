@@ -16,7 +16,10 @@ title = "Computational Complete Economy Model on Climate Gas Reduction"
 text = """<b>In the short-run we are all dead: Non-Equilibrium Dynamics in a Computational General Equilibrium model.</b><br>
 Studies of the economic impact and mitigation of climate change usually use computable general equilibrium models (CGE). Equilibrium models, as the name suggests, model the economy as in equilibrium, the transitions to the equilibrium are ignored. In the time spend outside equilibrium, the economy produces different quantities of goods and pollution as predicted by the equilibrium model. If the economy in this  time outside of the equilibrium produces more climate gasses the predictions are dangerously wrong.
 We present in this paper a computational generalization of the Arrow-Debreu general equilibrium model, which is not in equilibrium during the transitions, but converges to the same equilibrium as a CGE model with the same data and assumption. We call this new class of models Computational Complete Economy models.
-Computational Complete Economy models have other interesting applications for example in international trade, tax policy and macroeconomics.
+Computational Complete Economy models have other interesting applications for example in international trade, tax policy and macroeconomics.<br>
+
+On the left hand side you can introduce a series of tax policies, the most important one is the tax on carbon. This tax is applied
+to the carbon output of the three sectors that produce raw materials: coal, oil and gas.
 """
 
 simulation_parameters = OrderedDict({'wage_stickiness': (0, 0.5, 1.0),
