@@ -107,6 +107,8 @@ class Firm(abce.Agent, abce.Firm):
         self.carbon_tax_after = simulation_parameters['carbon_tax'] * 12 / 44
         self.carbon_tax = 0
 
+        self.after_policy_change_output_tax_share = simulation_parameters['tax_' + self.group] / 100
+
         self.goods_details = GoodDetails(betas, self.capital_types, self.num_firms)
         self.goods_details.set_prices_from_list(normalized_random(len(self.goods_details)))
 
@@ -130,6 +132,7 @@ class Firm(abce.Agent, abce.Firm):
     def taxes_intervention(self):
         if self.round == self.tax_change_time:
             self.carbon_tax = self.carbon_tax_after
+            self.output_tax_share = self.after_policy_change_output_tax_share
 
     def international_trade(self):
         if self.value_of_international_sales > 0:
@@ -191,7 +194,7 @@ class Firm(abce.Agent, abce.Firm):
 
     def carbon_taxes(self):
         carbon_tax = self.produced * self.carbon_prod * self.carbon_tax  * (1 - self.output_tax_share)
-        self.give('government', 0, good='money', quantity=min(self.possession('money'),carbon_tax))
+        self.give('government', 0, good='money', quantity=min(self.possession('money'), carbon_tax))
 
     def buying(self):
         """ get offers from each neighbor, accept it and update

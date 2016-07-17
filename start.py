@@ -19,19 +19,37 @@ We present in this paper a computational generalization of the Arrow-Debreu gene
 Computational Complete Economy models have other interesting applications for example in international trade, tax policy and macroeconomics.<br>
 
 On the left hand side you can introduce a series of tax policies, the most important one is the tax on carbon. This tax is applied
-to the carbon output of the three sectors that produce raw materials: coal, oil and gas.
+to the carbon output of the three sectors that produce raw materials: coal mining, refined petroleum and gas works and distribution.
 """
 
-simulation_parameters = OrderedDict({'wage_stickiness': (0, 0.5, 1.0),
-                                     'price_stickiness': (0, 0.5, 1.0),
-                                     'network_weight_stickiness': (0, 0.5, 1.0),
-                                     'carbon_tax': (0, 50.0, 80.0),
-                                     'tax_change_time': 100,
-                                     'rounds': 200})
+simulation_parameters = OrderedDict((('carbon_tax', (0, 0.0, 80.0)),
+                                     ('tax_eis', (0.0, 0.012963293555430438 * 100, 100.0)),
+                                     ('tax_oil', (0.0, 0.011268228015908086 * 100, 100.0)),
+                                     ('tax_trn', (0.0, 0.026571679384158282 * 100, 100.0)),
+                                     ('tax_gas', (0.0, 0.02444919587245515 * 100, 100.0)),
+                                     ('tax_roe', (0.0, 0.02309537718734039 * 100, 100.0)),
+                                     ('tax_ele', (0.0, 0.10978500776587917 * 100, 100.0)),
+                                     ('tax_o_g', (0.0, 0.023756906077348067 * 100, 100.0)),
+                                     ('tax_col', (0.0, 0.08872377622377624 * 100, 100.0)),
+                                     ('tax_change_time', 100),
+                                     ('rounds', 200)))
+
+
+names = {'carbon_tax': 'Tax per ton of carbon in US dollars',
+         'tax_eis': 'Tax on energy intensive industry sectors in percent',
+         'tax_oil': 'Tax on refined petroleum in percent of revenue',
+         'tax_trn': 'Tax on transportation in percent of revenue',
+         'tax_gas': 'Tax on gas works and distribution oil in percent of revenue',
+         'tax_roe': 'Tax on the rest of the economy in percent of revenue',
+         'tax_ele': 'Tax on electric power in percent of revenue',
+         'tax_o_g': 'Tax on crude oil and gas in percent of revenue',
+         'tax_col': 'Tax on coal mining in percent of revenue',
+         'tax_change_time': 'Policy change in round',
+         'rounds': 'Length of simulation'}
 
 simulation_parameters['trade_logging'] = 'group'
 
-@gui(simulation_parameters, text=text, title=title)
+@gui(simulation_parameters, text=text, title=title, names=names, truncate_initial_rounds=50)
 def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
@@ -45,8 +63,7 @@ def main(simulation_parameters):
                         'oil': 2439.4 * 1e-4,
                         'gas': 1244.3 * 1e-4})
     """ this is the co2 output per sector at the base year """
-    print 'carbon_prod'
-    print carbon_prod
+    print sam.output_tax_shares()
 
 
     simulation_parameters.update({'name': 'cce',
@@ -66,7 +83,10 @@ def main(simulation_parameters):
                                   'outputs': sam.outputs,
                                   'balance_of_payment': sam.balance_of_payment('nx', 'inv'),
                                   'sam': sam,
-                                  'carbon_prod': carbon_prod})
+                                  'carbon_prod': carbon_prod,
+                                  'wage_stickiness': 0.5,
+                                  'price_stickiness': 0.5,
+                                  'network_weight_stickiness': 0.5})
 
 
     firms = sam.outputs
@@ -89,7 +109,7 @@ def main(simulation_parameters):
                    (firms, 'dividends'),
                    (firms, 'change_weights'),
                    (firms, 'stats'),
-                   (['col', 'oil', 'gas', 'household'], 'aggregate'),
+                   (['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'household'], 'aggregate'),
                    (('household'), 'consuming')]
 
     simulation.add_action_list(action_list)
@@ -104,10 +124,15 @@ def main(simulation_parameters):
                          variables=['welfare'])
     """ collect data """
 
-    for good in ['col', 'oil', 'gas']:
+    for good in ['col', 'gas', 'oil']:
         simulation.aggregate(good,
                              possessions=[],
                              variables=['price', 'produced', 'co2'])
+
+    for good in ['ele', 'o_g', 'eis', 'trn', 'roe']:
+        simulation.aggregate(good,
+                             possessions=[],
+                             variables=['price', 'produced'])
 
     for good in firms:
         simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
