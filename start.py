@@ -49,7 +49,9 @@ names = {'carbon_tax': 'Tax per ton of carbon in US dollars',
 
 simulation_parameters['trade_logging'] = 'group'
 
-@gui(simulation_parameters, text=text, title=title, names=names, truncate_initial_rounds=50)
+@gui(simulation_parameters,
+     text=text, title=title, names=names, truncate_initial_rounds=50,
+     self_hosted=False)
 def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
