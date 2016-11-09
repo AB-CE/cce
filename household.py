@@ -21,6 +21,7 @@ class Household(abce.Agent, abce.Household):
         self.set_cobb_douglas_utility_function(self.alpha)
         self.sells = []
         self.welfare = 0
+        self.price = {}
 
     def send_demand(self):
         """ send the demand to the firms, it's the demand that maximizes the
@@ -43,9 +44,10 @@ class Household(abce.Agent, abce.Household):
             nominal_demand = [msg.content for msg in ct_messages]
             market_clearing_price = sum(nominal_demand) / self.possession(capital_type)
             if self.round > 5:
-                self.price = price = (1 - self.wage_stickiness) * market_clearing_price + self.wage_stickiness * self.price
+                self.price[capital_type] = price = ((1 - self.wage_stickiness) * market_clearing_price
+                                                    + self.wage_stickiness * self.price[capital_type])
             else:
-                self.price = price = market_clearing_price
+                self.price[capital_type] = price = market_clearing_price
             demand = sum([msg.content / price for msg in ct_messages])
             if demand < self.possession(capital_type):
                 self.rationing = rationing = 1
