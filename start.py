@@ -97,10 +97,6 @@ def main(simulation_parameters):
     simulation.declare_service('endowment_FFlab', 1, 'lab')
     """ every round for every endowment_FFcap the owner gets one good of lab
     similar for cap"""
-
-
-
-
     firms = {good: simulation.build_agents(Firm,
                                      number=simulation_parameters['num_firms'],
                                      group_name=good,
@@ -113,6 +109,7 @@ def main(simulation_parameters):
     firms_and_household = sum(firms.values()) + household
     all_firms = sum(firms.values())
 
+    """ this is the execution order every round """
     try:
         for r in range(simulation_parameters['rounds']):
             simulation.advance_round(r)

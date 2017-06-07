@@ -14,7 +14,11 @@ class Government(abce.Agent):
     def init(self, simulation_parameters, _):
         self.num_households = simulation_parameters['num_household']
 
+    #
+        # receive taxes from the firms
+
     def taxes_to_household(self):
+        """ transfer all received taxes to the consumer """
         self.money = self.possession('money')
         share  = self.money / self.num_households
         for i in range(self.num_households):

@@ -1,3 +1,4 @@
+""" print input output table of the economy """
 import pandas as pd
 import numpy as np
 

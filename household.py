@@ -23,6 +23,8 @@ class Household(abce.Agent, abce.Household):
         self.welfare = 0
 
     def send_demand(self):
+        """ send the demand to the firms, it's the demand that maximizes the
+        agents utility given last rounds prices """
         for final_good in self.final_goods:
             for i in range(self.num_firms):
                 demand = self.alpha[final_good] / self.num_firms * self.possession("money")
@@ -57,11 +59,13 @@ class Household(abce.Agent, abce.Household):
                 self.sells.append(sell)
 
     def buying(self):
+        """ accept the delivery and pay for all goods you requested """
         for final_good in self.final_goods:
             for offer in self.get_offers(final_good):
                 self.accept(offer)
 
     def money_to_nx(self):
+        """ give the remaining money to netexport """
         self.give(('netexport', 0), quantity=self.possession('money'), good='money')
 
     def sales_accounting(self):

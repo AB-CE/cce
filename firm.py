@@ -129,11 +129,17 @@ class Firm(abce.Agent, abce.Firm):
         self.nx = 0
 
     def taxes_intervention(self):
+        """ when there is a tax increase firms change the tax-rate that underlies the
+        amount of money they send to the government """
         if self.round == self.tax_change_time:
             self.carbon_tax = self.carbon_tax_after
             self.output_tax_share = self.after_policy_change_output_tax_share
 
     def international_trade(self):
+        """ the country trades a fixed value of goods internationally if nx is positve it sells
+        goods if it is negative it buys goods from the rest of the world net export and
+        investment are both counterparitied by netexport, which spends all remaining household
+        money on the netexports, rationes if insufficient and sells newly created goods"""
         if self.value_of_international_sales > 0:
             value = min(self.value_of_international_sales, self.possession(self.group))
             sale = self.sell(('netexport', 0), good=self.group, quantity=value, price=self.price)
@@ -144,6 +150,7 @@ class Firm(abce.Agent, abce.Firm):
             self.nx = value
 
     def invest(self):
+        """ is in international_trade, only that investments must are never negative """
         if self.value_of_investment > 0:
             value = min(self.value_of_investment, self.possession(self.group))
             sale = self.sell(('netexport', 0), good=self.group, quantity=value, price=self.price)
@@ -151,7 +158,9 @@ class Firm(abce.Agent, abce.Firm):
 
 
     def send_demand(self):
-        """ send nominal demand, according to weights to neighbor """
+        """ send nominal demand, according to weights to neighbor. The weights are choose in
+        the change_weights function in such a manner that they that at last rounds prices
+        the resulting quantity would be profit maximizing. Possibly the adaptation is sticky """
         for entity, id, good, _, weight in self.goods_details:
             self.message(entity, id,
                          good,
@@ -159,10 +168,9 @@ class Firm(abce.Agent, abce.Firm):
 
     def selling(self):
         """ receive demand from neighbors and consumer;
-            calculate market_clearing_price, adaped the price slowly
-            and sell the good to the neighbors, the quantity might
-            be rationed.
-        """
+            calculate market_clearing_price. Adapted the price either slowly
+            or instantaneously and sell the good to the neighbors, the quantity might
+            be rationed, if price adaptation is sticky"""
         messages = self.get_messages(self.group)
         nominal_demand = [msg.content for msg in messages]
         self.nominal_demand = sum(nominal_demand)
@@ -186,12 +194,14 @@ class Firm(abce.Agent, abce.Firm):
                 self.sales.append(sale)
 
     def sales_tax(self):
+        """ give a percentage of your sales to the government """
         total_sales_quantity = sum([sale.final_quantity for sale in self.sales]) - self.nx
         tax = (total_sales_quantity * self.price) * self.output_tax_share
         self.give(('government', 0), good='money', quantity=min(self.possession('money'), tax))
         self.sales = []
 
     def carbon_taxes(self):
+        """ send a per ton carbon tax to the government """
         carbon_tax = self.produced * self.carbon_prod * self.carbon_tax  * (1 - self.output_tax_share)
         self.give(('government', 0), good='money', quantity=min(self.possession('money'), carbon_tax))
 
@@ -218,6 +228,7 @@ class Firm(abce.Agent, abce.Firm):
         self.money_1 = self.possession('money')
 
     def change_weights(self):
+        """ send_demand """
         opt = optimization(seed_weights=self.seed_weights,
                            input_prices=self.goods_details.list_of_cheapest_offers(),
                            b=self.b,
