@@ -1,6 +1,5 @@
-from __future__ import division
 import abce
-from abce import NotEnoughGoods, epsilon
+from abce import NotEnoughGoods
 from pprint import pprint
 from sys import float_info
 from collections import defaultdict
@@ -37,7 +36,7 @@ class Household(abce.Agent, abce.Household):
             be rationed.
         """
         messages = self.get_messages_all()
-        for capital_type, ct_messages in messages.iteritems():
+        for capital_type, ct_messages in messages.items():
             nominal_demand = [msg.content for msg in ct_messages]
             market_clearing_price = sum(nominal_demand) / self.possession(capital_type)
             if self.round > 5:

@@ -1,5 +1,6 @@
 import abce
-from abce import NotEnoughGoods, epsilon
+from abce import NotEnoughGoods
+
 
 class NetExport(abce.Agent):
     def init(self, _, __):

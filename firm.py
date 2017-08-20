@@ -1,7 +1,6 @@
 #pylint: disable=W0201
-from __future__ import division
 import abce
-from abce import NotEnoughGoods, epsilon
+from abce import NotEnoughGoods
 import random
 import numpy as np
 from optimization_functions import optimization
@@ -23,7 +22,7 @@ class GoodDetails:
         self.prices = OrderedDict()
         self.weights = OrderedDict()
         self.betas = []
-        for good, value in betas.iteritems():
+        for good, value in betas.items():
             if value > 0:
                 self.betas.append(value)
                 if good in capital_types:
@@ -47,7 +46,7 @@ class GoodDetails:
 
     def update_weights_optimal_from_partial_list(self, weights):
         for good in self.goods:
-            for i in xrange(len(self.weights[good])):
+            for i in range(len(self.weights[good])):
                 self.weights[good][i] = 0
 
         for i, good in enumerate(self.goods):
@@ -123,7 +122,7 @@ class Firm(abce.Agent, abce.Firm):
         self.profit = 0
 
         self.b = production_function[0]
-        self.beta = {good: value for good, value in production_function[1].iteritems() if value > 0}
+        self.beta = {good: value for good, value in production_function[1].items() if value > 0}
 
         self.set_cobb_douglas(self.group, self.b, self.beta)
         self.sales = []
@@ -225,8 +224,8 @@ class Firm(abce.Agent, abce.Firm):
                            beta=self.goods_details.betas,
                            method='SLSQP')
         if not opt.success:
-            print self.round, self.name, opt.message
-            print zip(self.goods_details.goods.keys(), self.goods_details.list_of_cheapest_offers().tolist())
+            print (self.round, self.name, opt.message)
+            print (zip(self.goods_details.goods.keys(), self.goods_details.list_of_cheapest_offers().tolist()))
             raise Exception('Optimization error')
 
         self.seed_weights = opt.x

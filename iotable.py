@@ -39,21 +39,21 @@ def to_iotable(name, rounds=None):
         values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=1)
         values = values.reindex_axis(['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap', 'government', 'household', 'inv', 'netexport'], axis=0)
         values = values.replace(np.NaN, 0)
-        print '***\tvalues\t***'
-        print values
-        print '***\tprice\t***'
-        print prices
+        print('***\tvalues\t***')
+        print(values)
+        print('***\tprice\t***')
+        print(prices)
         p.append(prices)
-        print '***\tquantities\t***'
-        print quantities
+        print('***\tquantities\t***')
+        print(quantities)
         q.append(quantities)
-        print '***\trelative\t***'
+        print('***\trelative\t***')
         print
     pd.set_option('display.float_format', lambda x: '%.1f' % (x * 100))
-    print 'p'
-    print p[1] / p[0] - 1
-    print 'q'
-    print q[1] / q[0] - 1
+    print('p')
+    print(p[1] / p[0] - 1)
+    print('q')
+    print(q[1] / q[0] - 1)
     return value
 
 

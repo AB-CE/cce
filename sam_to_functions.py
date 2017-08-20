@@ -1,4 +1,3 @@
-from __future__ import division
 import csv
 from pprint import pprint
 from collections import defaultdict
@@ -30,7 +29,7 @@ class Sam():
                 rowindex = row['index']
                 if rowindex == 'sum':
                     break
-                for cellindex, cell in row.iteritems():
+                for cellindex, cell in row.items():
                     if cellindex not in ['index', 'sum']:
                         entries[rowindex][cellindex] = float_or_zero(cell)
 

@@ -1,4 +1,3 @@
-from __future__ import division
 from firm import Firm
 from household import Household
 from netexport import NetExport
@@ -14,7 +13,8 @@ from abce.abcegui import app
 
 title = "Computational Complete Economy Model on Climate Gas Reduction"
 
-text = """<b>In the Short Run We Are All Dead: Non-Equilibrium Dynamics in a Computational General Equilibrium Model.</b><br>
+text = """In the Short Run We Are All Dead
+<b>In the Short Run We Are All Dead: Non-Equilibrium Dynamics in a Computational General Equilibrium Model.</b><br>
 Studies of the economic impact and mitigation of climate change usually use computable general equilibrium models (CGE). Equilibrium models, as the name suggests, model the economy in equilibrium: the transitions to the equilibrium are ignored. In the time spend outside equilibrium, the economy produces different quantities of goods and pollution, as predicted by the equilibrium model. If the economy in this time outside of the equilibrium produces more climate gases, the predictions are dangerously wrong.
 In this paper we present a computational generalization of the Arrow-Debreu general equilibrium model, which is not in equilibrium during the transitions, but converges to the same equilibrium as a CGE model with the same data and assumptions. We call this new class of models Computational Complete Economy models.
 Computational Complete Economy models have other interesting applications, for example in international trade, tax policy, and macroeconomics.
@@ -50,8 +50,7 @@ names = {'carbon_tax': 'Tax per ton of carbon in US dollars',
 simulation_parameters['trade_logging'] = 'group'
 
 @gui(simulation_parameters,
-     text=text, title=title, names=names, truncate_initial_rounds=50,
-     self_hosted=False)
+     texts=[text], title=title, names=names, truncate_rounds=50)
 def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
@@ -65,7 +64,7 @@ def main(simulation_parameters):
                         'oil': 2439.4 * 1e-4,
                         'gas': 1244.3 * 1e-4})
     """ this is the co2 output per sector at the base year """
-    print sam.output_tax_shares()
+    print(sam.output_tax_shares())
 
 
     simulation_parameters.update({'name': 'cce',
@@ -91,72 +90,67 @@ def main(simulation_parameters):
                                   'network_weight_stickiness': 0.5})
 
 
-    firms = sam.outputs
-    firms_and_household = firms + ['household']
+    simulation = Simulation(trade_logging='group', processes=1)
 
-    simulation = Simulation(rounds=simulation_parameters['rounds'], trade_logging='group', processes=1)
-    action_list = [(firms, 'taxes_intervention'),
-                   (firms_and_household, 'send_demand'),
-                   (firms_and_household, 'selling'),
-                   (firms_and_household, 'buying'),
-                   ('household', 'money_to_nx'),
-                   (firms, 'production'),
-                   (firms, 'carbon_taxes'),
-                   (firms, 'sales_tax'),
-                   ('government', 'taxes_to_household'),
-                   (firms, 'international_trade'),
-                   (firms, 'invest'),
-                   ('netexport', 'invest'),
-                   (('household'), 'sales_accounting'),
-                   (firms, 'dividends'),
-                   (firms, 'change_weights'),
-                   (firms, 'stats'),
-                   (['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'household'], 'aggregate'),
-                   (('household'), 'consuming')]
 
-    simulation.add_action_list(action_list)
 
     simulation.declare_service('endowment_FFcap', 1, 'cap')
     simulation.declare_service('endowment_FFlab', 1, 'lab')
     """ every round for every endowment_FFcap the owner gets one good of lab
     similar for cap"""
 
-    simulation.aggregate('household',
-                         possessions=[],
-                         variables=['welfare'])
-    """ collect data """
 
-    for good in ['col', 'gas', 'oil']:
-        simulation.aggregate(good,
-                             possessions=[],
-                             variables=['price', 'produced', 'co2'])
 
-    for good in ['ele', 'o_g', 'eis', 'trn', 'roe']:
-        simulation.aggregate(good,
-                             possessions=[],
-                             variables=['price', 'produced'])
 
-    for good in firms:
-        simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
-    simulation.build_agents(Household, 'household', simulation_parameters['num_household'], parameters=simulation_parameters)
-    simulation.build_agents(NetExport, 'netexport', 1, parameters=simulation_parameters)
-    simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
+    firms = sum([simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
+                for good in sam.outputs])
+    household = simulation.build_agents(Household, 'household', simulation_parameters['num_household'], parameters=simulation_parameters)
+    netexport = simulation.build_agents(NetExport, 'netexport', 1, parameters=simulation_parameters)
+    government = simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
+
+    firms_and_household = firms + household
+
     try:
-        simulation.run()
+        for r in range(simulation_parameters['rounds']):
+            simulation.advance_round(r)
+            firms.taxes_intervention()
+            firms_and_household.send_demand()
+            firms_and_household.selling()
+            firms_and_household.buying()
+            household.money_to_nx()
+            firms.production()
+            firms.carbon_taxes()
+            firms.sales_tax()
+            government.taxes_to_household()
+            firms.international_trade()
+            firms.invest()
+            netexport.invest()
+            household.sales_accounting()
+            firms.dividends()
+            firms.change_weights()
+            firmslog_in_subround_or_serialstats()
+            (col + ele + gas + o_g + oil + eis + trn + roe + household
+              ).aggregate(variables=['welfare'])
+            ('col' + 'gas' + 'oil').aggregate(
+                variables=['price', 'produced', 'co2'])
+
+            ('ele' + 'o_g' + 'eis' + 'trn' + 'roe').aggregate(
+                variables=['price', 'produced'])
+            household.consuming()
     except Exception as e:
         print(e)
         # raise  # put raise for full traceback but no graphs in case of error
     iotable.to_iotable(simulation.path, [99, simulation_parameters['rounds'] - 1])
     mean_price = iotable.average_price(simulation.path, 99)
-    print 'mean price', mean_price
+    print('mean price', mean_price)
     #simulation.graphs()
     return mean_price
 
 def F(money):
     prices = main(float(money))
     print("****")
-    print 'money', money
-    print 'price lvl', prices
+    print('money', money)
+    print('price lvl', prices)
     print("****")
     return ((1.0 - prices) ** 2) * 100000
 
