@@ -102,43 +102,48 @@ def main(simulation_parameters):
 
 
 
-    firms = sum([simulation.build_agents(Firm, number=simulation_parameters['num_firms'], group_name=good, parameters=simulation_parameters)
-                for good in sam.outputs])
+    firms = {good: simulation.build_agents(Firm,
+                                     number=simulation_parameters['num_firms'],
+                                     group_name=good,
+                                     parameters=simulation_parameters)
+             for good in sam.outputs}
     household = simulation.build_agents(Household, 'household', simulation_parameters['num_household'], parameters=simulation_parameters)
     netexport = simulation.build_agents(NetExport, 'netexport', 1, parameters=simulation_parameters)
     government = simulation.build_agents(Government, 'government', 1, parameters=simulation_parameters)
 
-    firms_and_household = firms + household
+    firms_and_household = sum(firms.values()) + household
+    all_firms = sum(firms.values())
 
     try:
         for r in range(simulation_parameters['rounds']):
             simulation.advance_round(r)
-            firms.taxes_intervention()
+            all_firms.taxes_intervention()
             firms_and_household.send_demand()
             firms_and_household.selling()
             firms_and_household.buying()
             household.money_to_nx()
-            firms.production()
-            firms.carbon_taxes()
-            firms.sales_tax()
+            all_firms.production()
+            all_firms.carbon_taxes()
+            all_firms.sales_tax()
             government.taxes_to_household()
-            firms.international_trade()
-            firms.invest()
+            all_firms.international_trade()
+            all_firms.invest()
             netexport.invest()
             household.sales_accounting()
-            firms.dividends()
-            firms.change_weights()
-            firmslog_in_subround_or_serialstats()
-            (col + ele + gas + o_g + oil + eis + trn + roe + household
-              ).aggregate(variables=['welfare'])
-            ('col' + 'gas' + 'oil').aggregate(
+            all_firms.dividends()
+            all_firms.change_weights()
+            all_firms.stats()
+            household.agg_log(variables=['welfare'])
+            (firms['col'] + firms['gas'] + firms['oil']).agg_log(
                 variables=['price', 'produced', 'co2'])
 
-            ('ele' + 'o_g' + 'eis' + 'trn' + 'roe').aggregate(
+            (firms['ele'] + firms['o_g'] + firms['eis'] + firms['trn'] + firms['roe']).agg_log(
                 variables=['price', 'produced'])
             household.consuming()
     except Exception as e:
         print(e)
+
+    simulation.finalize()
         # raise  # put raise for full traceback but no graphs in case of error
     iotable.to_iotable(simulation.path, [99, simulation_parameters['rounds'] - 1])
     mean_price = iotable.average_price(simulation.path, 99)

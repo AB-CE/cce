@@ -20,6 +20,7 @@ class Household(abce.Agent, abce.Household):
 
         self.set_cobb_douglas_utility_function(self.alpha)
         self.sells = []
+        self.welfare = 0
 
     def send_demand(self):
         for final_good in self.final_goods:

@@ -7,7 +7,7 @@ def to_iotable(name, rounds=None):
     pd.set_option('expand_frame_repr', False)
     pd.set_option('precision', 3)
     pd.set_option('display.float_format', lambda x: '%.3f' % x)
-    df = pd.read_csv(name + '/trade.csv')
+    df = pd.read_csv(name + '/trade___trade.csv')
     if rounds is None:
         rounds = [max(df['round'])]
     q = []
@@ -59,7 +59,7 @@ def to_iotable(name, rounds=None):
 
 def average_price(name, round=99):
     pd.set_option('display.float_format', lambda x: '%.25f' % x)
-    df = pd.read_csv(name + '/trade.csv')
+    df = pd.read_csv(name + '/trade___trade.csv')
     table = df[df['round'] == round]
     table.drop(['round', 'index'], axis=1, inplace=True)
     grouped_table = table.groupby(['seller', 'buyer'])
