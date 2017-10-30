@@ -50,8 +50,7 @@ class Household(abce.Agent, abce.Household):
             else:
                 self.rationing = rationing = self.possession(capital_type) / demand
             for msg in ct_messages:
-                sell = self.sell(receiver_group=msg.sender_group,
-                                 receiver_id=msg.sender_id,
+                sell = self.sell(msg.sender,
                                  good=capital_type,
                                  quantity=msg.content / price * rationing,
                                  price=price)
@@ -63,7 +62,7 @@ class Household(abce.Agent, abce.Household):
                 self.accept(offer)
 
     def money_to_nx(self):
-        self.give('netexport', 0, quantity=self.possession('money'), good='money')
+        self.give(('netexport', 0), quantity=self.possession('money'), good='money')
 
     def sales_accounting(self):
         self.sales_earning = sum([sell.final_quantity * sell.price for sell in self.sells])
