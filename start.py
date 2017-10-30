@@ -8,8 +8,7 @@ import os
 from sam_to_functions import Sam
 from pprint import pprint
 import iotable
-from scipy import optimize
-from abce.abcegui import app
+
 
 title = "Computational Complete Economy Model on Climate Gas Reduction"
 
@@ -50,7 +49,7 @@ names = {'carbon_tax': 'Tax per ton of carbon in US dollars',
 simulation_parameters['trade_logging'] = 'group'
 
 @gui(simulation_parameters,
-     texts=[text], title=title, names=names, truncate_rounds=50)
+     texts=[text], title=title, names=names, truncate_rounds=50, serve=True)
 def main(simulation_parameters):
     sam = Sam('climate_square.sam.csv',
               inputs=['col', 'ele', 'gas', 'o_g', 'oil', 'eis', 'trn', 'roe', 'lab', 'cap'],
@@ -145,11 +144,11 @@ def main(simulation_parameters):
 
     simulation.finalize()
         # raise  # put raise for full traceback but no graphs in case of error
-    iotable.to_iotable(simulation.path, [99, simulation_parameters['rounds'] - 1])
-    mean_price = iotable.average_price(simulation.path, 99)
-    print('mean price', mean_price)
+    #iotable.to_iotable(simulation.path, [99, simulation_parameters['rounds'] - 1])
+    #mean_price = iotable.average_price(simulation.path, 99)
+    #print('mean price', mean_price)
     #simulation.graphs()
-    return mean_price
+    #return mean_price
 
 def F(money):
     prices = main(float(money))
